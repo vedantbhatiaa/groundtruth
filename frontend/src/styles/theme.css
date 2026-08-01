@@ -352,3 +352,28 @@ html, body, #root { height: 100%; }
 .brand .word { font-size: 16px; letter-spacing: 0.18em; }
 .summary-card .big, .site-big { letter-spacing: -0.02em; }
 .rail-label, .filter-label { font-weight: 500; }
+
+/* ===== Analysis view + info pages ===== */
+.analysis-view{flex:1;overflow-y:auto;padding:22px 26px;}
+.analysis-header{display:flex;align-items:baseline;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+.analysis-header h2{font-size:22px;margin:0;}
+.analysis-sub{font-size:12px;color:var(--text-faint);}
+.back-btn{background:var(--bg-1);border:1px solid var(--border-strong);color:var(--text-dim);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Space Grotesk','Inter',sans-serif;}
+.back-btn:hover{color:var(--teal);border-color:var(--teal);}
+.analysis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
+.company-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.company-card-head{display:flex;justify-content:space-between;align-items:center;}
+.company-name{font-size:15px;font-weight:700;}
+.intensity-pill{font-size:10.5px;padding:3px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:0.05em;}
+.company-big{font-size:30px;font-weight:700;margin-top:10px;line-height:1;display:flex;align-items:baseline;gap:5px;}
+.company-big small{font-size:12px;color:var(--text-dim);font-weight:500;font-family:'Inter',sans-serif;}
+.company-meta{font-size:11.5px;color:var(--text-dim);margin-top:6px;}
+.sector-bars{margin-top:12px;display:flex;flex-direction:column;gap:5px;}
+.sector-bar-row{display:flex;align-items:center;gap:8px;font-size:11px;}
+.sector-bar-label{width:64px;color:var(--text-dim);text-transform:capitalize;flex-shrink:0;}
+.sector-bar-track{flex:1;height:5px;border-radius:3px;background:var(--bg-1);overflow:hidden;}
+.sector-bar-track i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--violet));}
+.sector-bar-value{width:34px;text-align:right;color:var(--text-faint);flex-shrink:0;}
+.info-page{flex:1;overflow-y:auto;padding:28px;max-width:720px;}
+.info-page h2{font-size:24px;margin:16px 0 12px;}
+.info-page p{font-size:14px;line-height:1.75;color:var(--text-dim);}

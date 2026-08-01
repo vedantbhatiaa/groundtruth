@@ -2,38 +2,53 @@
 Two ways into the graph, on purpose:
 
 - `list_sites` / `get_site` — fixed, hand-written queries for the frontend's
-  normal operation (populating the globe, the site detail card). These never
-  touch LLM output at all.
-- `run_llm_cypher` — the path the chatbot's orchestrator uses when it
-  decides a question needs a structured lookup. Always goes through
-  cypher_guard.validate() first and always runs on the read-only connection.
+  normal operation. These never touch LLM output at all.
+- `run_llm_cypher` — the chatbot orchestrator's path. Always validated by
+  cypher_guard first, always on the read-only connection.
+
+list_sites now takes a `year` and a `trend_window`: co2 comes from that
+year's EmissionRecord, and trend is computed against the record from
+(year - trend_window). This is what makes the year dropdown and the
+5YR/10YR toggle real instead of decorative.
 """
 
 from app.db.neo4j_client import run_read
 from app.services.cypher_guard import validate
 
 
-def list_sites(industry: list[str] | None = None, country: str | None = None) -> list[dict]:
+def list_sites(
+    industry: list[str] | None = None,
+    country: str | None = None,
+    year: int = 2024,
+    trend_window: int = 5,
+) -> list[dict]:
+    base_year = year - trend_window
     query = """
     MATCH (c:Company)-[:OWNS]->(s:Site)-[:LOCATED_IN]->(co:Country)
     WHERE ($industry IS NULL OR c.industry IN $industry)
       AND ($country IS NULL OR co.name = $country)
-    OPTIONAL MATCH (s)-[:EMITS]->(e:EmissionRecord)
-    WITH s, c, co, e ORDER BY e.year DESC
+    OPTIONAL MATCH (s)-[:EMITS]->(e:EmissionRecord {year: $year})
+    OPTIONAL MATCH (s)-[:EMITS]->(b:EmissionRecord {year: $base_year})
     RETURN s.id AS id, s.name AS name, c.name AS company, co.name AS country,
            s.sector AS sector, s.lat AS lat, s.lon AS lng,
-           e.tons AS co2, s.intensity AS intensity
-    LIMIT 200
+           e.tons AS co2, b.tons AS baseline, s.intensity AS intensity
+    LIMIT 300
     """
-    rows = run_read(query, industry=industry, country=country)
-    # trend and news aren't in the graph yet (trend needs a year-over-year
-    # calc, news needs a MENTIONED_IN traversal) — placeholder values here
-    # keep the API contract matching the frontend's Site type until those
-    # are wired up.
+    rows = run_read(query, industry=industry, country=country, year=year, base_year=base_year)
     for row in rows:
-        row.setdefault("trend", "0%")
+        co2 = row.get("co2")
+        baseline = row.pop("baseline", None)
+        if co2 is not None and baseline:
+            pct = (co2 - baseline) / baseline * 100
+            row["trend"] = f"{'+' if pct >= 0 else ''}{pct:.0f}%"
+        else:
+            # No record for the baseline year (e.g. 10YR window on data that
+            # only goes back 5 years) — report that honestly.
+            row["trend"] = "n/a"
         row.setdefault("news", [])
-    return rows
+    # Drop sites with no record for the selected year rather than showing
+    # them with a null co2 that breaks sizing on the globe.
+    return [r for r in rows if r.get("co2") is not None]
 
 
 def get_site(site_id: str) -> dict | None:

@@ -1,9 +1,14 @@
 interface Props {
   open: boolean;
   onClose: () => void;
+  onNavigate: (view: string) => void;
 }
 
-export default function NavDrawer({ open, onClose }: Props) {
+export default function NavDrawer({ open, onClose, onNavigate }: Props) {
+  function go(view: string) {
+    onNavigate(view);
+    onClose();
+  }
   return (
     <>
       <div className={`nav-scrim ${open ? "open" : ""}`} onClick={onClose} />
@@ -15,20 +20,19 @@ export default function NavDrawer({ open, onClose }: Props) {
             <div className="tag">emissions, traced to source</div>
           </div>
         </div>
-        <a className="nav-item">Home</a>
+        <a className="nav-item" onClick={() => go("map")}>Home</a>
         <div className="nav-section">Track emissions</div>
-        <a className="nav-item sub">Explore map</a>
-        <a className="nav-item sub">Company analysis</a>
-        <a className="nav-item sub">Country inventories</a>
+        <a className="nav-item sub" onClick={() => go("map")}>Explore map</a>
+        <a className="nav-item sub" onClick={() => go("analysis")}>Company analysis</a>
         <div className="nav-section">Resources</div>
-        <a className="nav-item sub">Data downloads</a>
-        <a className="nav-item sub">Approach and methodology</a>
-        <a className="nav-item sub">Sectors covered</a>
+        <a className="nav-item sub" onClick={() => go("downloads")}>Data downloads</a>
+        <a className="nav-item sub" onClick={() => go("methodology")}>Approach and methodology</a>
+        <a className="nav-item sub" onClick={() => go("sectors")}>Sectors covered</a>
         <div className="nav-section">More</div>
-        <a className="nav-item sub">News and insights</a>
-        <a className="nav-item sub">Support</a>
-        <a className="nav-item sub">Contact</a>
-        <a className="nav-item sub">About this project</a>
+        <a className="nav-item sub" onClick={() => go("news")}>News and insights</a>
+        <a className="nav-item sub" onClick={() => go("support")}>Support</a>
+        <a className="nav-item sub" onClick={() => go("contact")}>Contact</a>
+        <a className="nav-item sub" onClick={() => go("about")}>About this project</a>
       </nav>
     </>
   );

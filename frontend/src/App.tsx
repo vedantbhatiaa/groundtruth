@@ -12,14 +12,23 @@ import SiteOverlay from "./components/SiteOverlay";
 import ControlRow from "./components/ControlRow";
 import ChatDrawer from "./components/ChatDrawer";
 import ChatFab from "./components/ChatFab";
+import AnalysisView from "./components/AnalysisView";
+import InfoPage from "./components/InfoPage";
 import { useTheme } from "./hooks/useTheme";
 import { fetchSites, checkHealth } from "./api/client";
 import { Site, sampleSites } from "./data/sampleSites";
+
+const INDUSTRY_LABELS: Record<string, string> = {
+  power: "Power & energy",
+  oil: "Oil & gas",
+  manufacturing: "Manufacturing",
+};
 
 export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
   const [navOpen, setNavOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [view, setView] = useState("map");
 
   const [sites, setSites] = useState<Site[]>(sampleSites);
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>(["power"]);
@@ -38,10 +47,6 @@ export default function App() {
 
   const globeHandle = useRef<GlobeStageHandle>(null);
 
-  // Real health check, polled every 15s — this is what makes the header
-  // status badge honest instead of a hardcoded "Live" claim. If this never
-  // flips to true, the backend genuinely isn't reachable from the browser
-  // (check the uvicorn terminal is still running and CORS origin matches).
   useEffect(() => {
     let cancelled = false;
     async function poll() {
@@ -56,12 +61,16 @@ export default function App() {
     };
   }, []);
 
+  // Refetch on any filter change — industry, country, year, AND trend
+  // window all flow through to the backend query now.
   useEffect(() => {
     fetchSites(
       selectedIndustries.length ? selectedIndustries : undefined,
-      country === "All countries" ? undefined : country
+      country === "All countries" ? undefined : country,
+      parseInt(selectedYear, 10),
+      parseInt(trendWindow, 10)
     ).then(setSites);
-  }, [selectedIndustries, country]);
+  }, [selectedIndustries, country, selectedYear, trendWindow]);
 
   let visibleSites = activeSectors.length
     ? sites.filter((s) => activeSectors.includes(s.sector))
@@ -81,9 +90,36 @@ export default function App() {
     setActiveSectors((prev) => (prev.includes(sector) ? prev.filter((s) => s !== sector) : [...prev, sector]));
   }
 
+  function downloadCsv() {
+    const header = "id,name,company,country,sector,lat,lng,co2_mt,trend,intensity";
+    const rows = visibleSites.map(
+      (s) => `${s.id},"${s.name}","${s.company}","${s.country}",${s.sector},${s.lat},${s.lng},${s.co2},${s.trend},${s.intensity}`
+    );
+    const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.download = `groundtruth-sites-${selectedYear}.csv`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
+  function handleNavigate(target: string) {
+    if (target === "downloads") {
+      downloadCsv();
+      return; // stays on current view; the download is the action
+    }
+    setView(target);
+  }
+
+  const summaryLabel = `${
+    selectedIndustries.length === 0
+      ? "All industries"
+      : selectedIndustries.map((i) => INDUSTRY_LABELS[i] ?? i).join(", ")
+  } · ${selectedYear}`;
+
   return (
     <>
-      <NavDrawer open={navOpen} onClose={() => setNavOpen(false)} />
+      <NavDrawer open={navOpen} onClose={() => setNavOpen(false)} onNavigate={handleNavigate} />
       <Header
         onOpenNav={() => setNavOpen(true)}
         theme={theme}
@@ -101,58 +137,64 @@ export default function App() {
         onChangeTrendWindow={setTrendWindow}
       />
 
-      <div className="shell">
-        <LeftRail
-          sites={visibleSites}
-          activeSectors={activeSectors}
-          onToggleSector={toggleSector}
-          onSelectSite={setSelectedSite}
-          country={country}
-          onChangeCountry={setCountry}
-        />
-
-        <div className="stage">
-          <GlobeStage
-            ref={globeHandle}
+      {view === "analysis" ? (
+        <AnalysisView sites={visibleSites} onBack={() => setView("map")} />
+      ) : view !== "map" ? (
+        <InfoPage page={view} onBack={() => setView("map")} />
+      ) : (
+        <div className="shell">
+          <LeftRail
             sites={visibleSites}
-            theme={theme}
-            mapStyle={mapStyle}
-            showSites={sitesOn}
+            activeSectors={activeSectors}
+            onToggleSector={toggleSector}
             onSelectSite={setSelectedSite}
-            visible={viewMode === "3d"}
-          />
-          <FlatMap sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} />
-
-          <IconRail active={viewMode === "2d"} />
-          <LegendCard active={legendOn} />
-          <SummaryCard sites={visibleSites} />
-          <SiteOverlay site={selectedSite} onClose={() => setSelectedSite(null)} />
-
-          <ControlRow
-            viewMode={viewMode}
-            onChangeViewMode={setViewMode}
-            legendOn={legendOn}
-            onToggleLegend={() => setLegendOn((v) => !v)}
-            sitesOn={sitesOn}
-            onToggleSites={() => setSitesOn((v) => !v)}
-            mapStyle={mapStyle}
-            onChangeMapStyle={setMapStyle}
-            onZoomIn={() => globeHandle.current?.zoomIn()}
-            onZoomOut={() => globeHandle.current?.zoomOut()}
-            onDownload={() => globeHandle.current?.downloadImage()}
+            country={country}
+            onChangeCountry={setCountry}
           />
 
-          <ChatFab visible={!chatOpen} onOpen={() => setChatOpen(true)} />
+          <div className="stage">
+            <GlobeStage
+              ref={globeHandle}
+              sites={visibleSites}
+              theme={theme}
+              mapStyle={mapStyle}
+              showSites={sitesOn}
+              onSelectSite={setSelectedSite}
+              visible={viewMode === "3d"}
+            />
+            <FlatMap sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} />
+
+            <IconRail active={viewMode === "2d"} />
+            <LegendCard active={legendOn} />
+            <SummaryCard sites={visibleSites} label={summaryLabel} />
+            <SiteOverlay site={selectedSite} onClose={() => setSelectedSite(null)} />
+
+            <ControlRow
+              viewMode={viewMode}
+              onChangeViewMode={setViewMode}
+              legendOn={legendOn}
+              onToggleLegend={() => setLegendOn((v) => !v)}
+              sitesOn={sitesOn}
+              onToggleSites={() => setSitesOn((v) => !v)}
+              mapStyle={mapStyle}
+              onChangeMapStyle={setMapStyle}
+              onZoomIn={() => globeHandle.current?.zoomIn()}
+              onZoomOut={() => globeHandle.current?.zoomOut()}
+              onDownload={() => globeHandle.current?.downloadImage()}
+            />
+
+            <ChatFab visible={!chatOpen} onOpen={() => setChatOpen(true)} />
+          </div>
+
+          <ChatDrawer
+            open={chatOpen}
+            onClose={() => setChatOpen(false)}
+            sites={visibleSites}
+            activeSiteId={selectedSite?.id}
+            onSelectSite={setSelectedSite}
+          />
         </div>
-
-        <ChatDrawer
-          open={chatOpen}
-          onClose={() => setChatOpen(false)}
-          sites={visibleSites}
-          activeSiteId={selectedSite?.id}
-          onSelectSite={setSelectedSite}
-        />
-      </div>
+      )}
     </>
   );
 }

@@ -4,9 +4,10 @@ import SparkBars from "./SparkBars";
 
 interface Props {
   sites: Site[];
+  label: string;
 }
 
-export default function SummaryCard({ sites }: Props) {
+export default function SummaryCard({ sites, label }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   const totalCo2 = sites.reduce((sum, s) => sum + s.co2, 0);
@@ -18,7 +19,7 @@ export default function SummaryCard({ sites }: Props) {
 
   return (
     <div className="summary-card">
-      <div className="label">Power &amp; energy · 2024</div>
+      <div className="label">{label}</div>
       <div className="big display">
         {totalCo2.toFixed(1)}
         <small>M t CO2e</small>

@@ -7,8 +7,9 @@ __pycache__/
 .venv/
 venv/
 
-# Data (generated at runtime, not committed)
-data/
+# Runtime data (root-level only — frontend/src/data is source code and MUST commit)
+/data/
+/backend/data/
 *.db
 
 # Node / frontend
@@ -17,5 +18,3 @@ frontend/dist/
 
 # OS
 .DS_Store
-
-.env

@@ -8,8 +8,12 @@ router = APIRouter(prefix="/api/sites", tags=["sites"])
 def list_sites(
     industry: list[str] | None = Query(default=None),
     country: str | None = Query(default=None),
+    year: int = Query(default=2024, ge=2020, le=2024),
+    trend_window: int = Query(default=5),
 ):
-    return graph_service.list_sites(industry=industry, country=country)
+    return graph_service.list_sites(
+        industry=industry, country=country, year=year, trend_window=trend_window
+    )
 
 
 @router.get("/{site_id}")

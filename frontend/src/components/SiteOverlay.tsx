@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Site } from "../data/sampleSites";
+import { fetchCompanyNews, fetchCompanyFilings, NewsItem, Filing } from "../api/client";
 import SparkBars from "./SparkBars";
 
 interface Props {
@@ -9,10 +10,37 @@ interface Props {
 
 export default function SiteOverlay({ site, onClose }: Props) {
   const [newsOpen, setNewsOpen] = useState(false);
+  const [filingsOpen, setFilingsOpen] = useState(false);
+  const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
+  const [filings, setFilings] = useState<Filing[] | null>(null);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [filingsLoading, setFilingsLoading] = useState(false);
+
+  // Live lookups fire the moment a site is selected — GDELT for news,
+  // SEC EDGAR for filings — instead of static sample text.
+  useEffect(() => {
+    if (!site) return;
+    setLiveNews(null);
+    setFilings(null);
+    setNewsLoading(true);
+    setFilingsLoading(true);
+    fetchCompanyNews(site.company).then((r) => {
+      setLiveNews(r);
+      setNewsLoading(false);
+    });
+    fetchCompanyFilings(site.company).then((r) => {
+      setFilings(r);
+      setFilingsLoading(false);
+    });
+  }, [site?.company]);
 
   if (!site) return null;
 
   const direction = site.trend.startsWith("+") ? "up" : site.trend.startsWith("-") ? "down" : "";
+  const showingLive = liveNews !== null && liveNews.length > 0;
+  const newsToShow: { title: string; url: string }[] = showingLive
+    ? liveNews!.map((n) => ({ title: n.title, url: n.url }))
+    : site.news.map((n) => ({ title: n, url: "" }));
 
   return (
     <div className="site-overlay open">
@@ -27,17 +55,51 @@ export default function SiteOverlay({ site, onClose }: Props) {
         {site.co2}
         <small>M t CO2e</small>
       </div>
-      <div className={`site-delta ${direction}`}>{site.trend} over 5 years</div>
+      <div className={`site-delta ${direction}`}>
+        {site.trend === "n/a" ? "no baseline data for this window" : `${site.trend} over selected window`}
+      </div>
       <SparkBars trendDirection={direction as "up" | "down" | ""} />
+
       <button className="more-toggle" onClick={() => setNewsOpen((o) => !o)}>
-        Recent news <span>{newsOpen ? "⌄" : "›"}</span>
+        {newsLoading ? "Loading news…" : showingLive ? "Recent news (live)" : "Recent news"}{" "}
+        <span>{newsOpen ? "⌄" : "›"}</span>
       </button>
       <div className={`summary-detail ${newsOpen ? "open" : ""}`}>
-        {site.news.map((n, i) => (
-          <div key={i} className="news-item">
-            {n}
+        {newsToShow.map((n, i) =>
+          n.url ? (
+            <a
+              key={i}
+              className="news-item"
+              href={n.url}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: "block", textDecoration: "none", color: "inherit" }}
+            >
+              {n.title}
+            </a>
+          ) : (
+            <div key={i} className="news-item">
+              {n.title}
+            </div>
+          )
+        )}
+      </div>
+
+      <button className="more-toggle" onClick={() => setFilingsOpen((o) => !o)}>
+        {filingsLoading ? "Loading filings…" : "SEC filings"} <span>{filingsOpen ? "⌄" : "›"}</span>
+      </button>
+      <div className={`summary-detail ${filingsOpen ? "open" : ""}`}>
+        {filings && filings.length > 0 ? (
+          filings.slice(0, 5).map((f, i) => (
+            <div key={i} className="news-item">
+              {Array.isArray(f.form_type) ? f.form_type.join(", ") : f.form_type} · filed {f.filed}
+            </div>
+          ))
+        ) : (
+          <div className="news-item">
+            {filingsLoading ? "…" : "No SEC filings found (non-US companies rarely file with the SEC)."}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
