@@ -1,0 +1,20 @@
+from fastapi import APIRouter, HTTPException, Query
+from app.services import graph_service
+
+router = APIRouter(prefix="/api/sites", tags=["sites"])
+
+
+@router.get("")
+def list_sites(
+    industry: list[str] | None = Query(default=None),
+    country: str | None = Query(default=None),
+):
+    return graph_service.list_sites(industry=industry, country=country)
+
+
+@router.get("/{site_id}")
+def get_site(site_id: str):
+    site = graph_service.get_site(site_id)
+    if not site:
+        raise HTTPException(status_code=404, detail="site not found")
+    return site

@@ -1,0 +1,21 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Data (generated at runtime, not committed)
+data/
+*.db
+
+# Node / frontend
+node_modules/
+frontend/dist/
+
+# OS
+.DS_Store
+
+.env
