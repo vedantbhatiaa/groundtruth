@@ -22,3 +22,8 @@ def get_site(site_id: str):
     if not site:
         raise HTTPException(status_code=404, detail="site not found")
     return site
+
+@router.get("/{site_id}/timeseries")
+def site_timeseries(site_id: str):
+    return graph_service.site_timeseries(site_id)
+

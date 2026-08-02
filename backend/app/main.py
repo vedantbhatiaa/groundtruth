@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import sites, chat, ingest
+from app.routers import sites, chat, ingest, analytics
 
 app = FastAPI(title="Groundtruth API", version="0.1.0")
 
@@ -16,6 +16,7 @@ app.add_middleware(
 app.include_router(sites.router)
 app.include_router(chat.router)
 app.include_router(ingest.router)
+app.include_router(analytics.router)
 
 
 @app.get("/api/health")

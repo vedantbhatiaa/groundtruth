@@ -14,6 +14,9 @@ from app.config import settings
 
 
 async def search_news(query: str, max_records: int = 25) -> list[dict]:
+    # Quote multi-word names so GDELT matches the phrase, not scattered words
+    if " " in query and not query.startswith('"'):
+        query = f'"{query}"'
     params = {
         "query": query,
         "mode": "artlist",

@@ -13,9 +13,10 @@ import ControlRow from "./components/ControlRow";
 import ChatDrawer from "./components/ChatDrawer";
 import ChatFab from "./components/ChatFab";
 import AnalysisView from "./components/AnalysisView";
+import CompanyDetail from "./components/CompanyDetail";
 import InfoPage from "./components/InfoPage";
 import { useTheme } from "./hooks/useTheme";
-import { fetchSites, checkHealth } from "./api/client";
+import { fetchSites, checkHealth, fetchStatsTimeseries } from "./api/client";
 import { Site, sampleSites } from "./data/sampleSites";
 
 const INDUSTRY_LABELS: Record<string, string> = {
@@ -44,6 +45,7 @@ export default function App() {
   const [sitesOn, setSitesOn] = useState(true);
   const [mapStyle, setMapStyle] = useState<MapStyle>("default");
   const [backendOnline, setBackendOnline] = useState(false);
+  const [statsSpark, setStatsSpark] = useState<number[] | undefined>(undefined);
 
   const globeHandle = useRef<GlobeStageHandle>(null);
 
@@ -64,12 +66,17 @@ export default function App() {
   // Refetch on any filter change — industry, country, year, AND trend
   // window all flow through to the backend query now.
   useEffect(() => {
-    fetchSites(
-      selectedIndustries.length ? selectedIndustries : undefined,
-      country === "All countries" ? undefined : country,
-      parseInt(selectedYear, 10),
-      parseInt(trendWindow, 10)
-    ).then(setSites);
+    const ind = selectedIndustries.length ? selectedIndustries : undefined;
+    const ctry = country === "All countries" ? undefined : country;
+    fetchSites(ind, ctry, parseInt(selectedYear, 10), parseInt(trendWindow, 10)).then((rows) => {
+      setSites(rows);
+      // A previously selected site may not exist under the new filters —
+      // clear it instead of showing a stale overlay next to fresh totals.
+      setSelectedSite((prev) => (prev && rows.some((r) => r.id === prev.id) ? prev : null));
+    });
+    fetchStatsTimeseries(ind, ctry).then((rows) => {
+      setStatsSpark(rows && rows.length > 0 ? rows.map((r) => r.total) : undefined);
+    });
   }, [selectedIndustries, country, selectedYear, trendWindow]);
 
   let visibleSites = activeSectors.length
@@ -138,7 +145,21 @@ export default function App() {
       />
 
       {view === "analysis" ? (
-        <AnalysisView sites={visibleSites} onBack={() => setView("map")} />
+        <AnalysisView
+          sites={visibleSites}
+          onBack={() => setView("map")}
+          onSelectCompany={(c) => setView(`company:${c}`)}
+        />
+      ) : view.startsWith("company:") ? (
+        <CompanyDetail
+          company={view.slice("company:".length)}
+          sites={visibleSites}
+          onBack={() => setView("analysis")}
+          onSelectSite={(s) => {
+            setSelectedSite(s);
+            setView("map");
+          }}
+        />
       ) : view !== "map" ? (
         <InfoPage page={view} onBack={() => setView("map")} />
       ) : (
@@ -166,7 +187,7 @@ export default function App() {
 
             <IconRail active={viewMode === "2d"} />
             <LegendCard active={legendOn} />
-            <SummaryCard sites={visibleSites} label={summaryLabel} />
+            <SummaryCard sites={visibleSites} label={summaryLabel} sparkValues={statsSpark} />
             <SiteOverlay site={selectedSite} onClose={() => setSelectedSite(null)} />
 
             <ControlRow

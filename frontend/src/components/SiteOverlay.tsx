@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Site } from "../data/sampleSites";
-import { fetchCompanyNews, fetchCompanyFilings, NewsItem, Filing } from "../api/client";
+import { fetchCompanyNews, fetchCompanyFilings, fetchSiteTimeseries, NewsItem, Filing } from "../api/client";
 import SparkBars from "./SparkBars";
 
 interface Props {
@@ -15,6 +15,7 @@ export default function SiteOverlay({ site, onClose }: Props) {
   const [filings, setFilings] = useState<Filing[] | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);
   const [filingsLoading, setFilingsLoading] = useState(false);
+  const [siteYears, setSiteYears] = useState<number[] | undefined>(undefined);
 
   // Live lookups fire the moment a site is selected — GDELT for news,
   // SEC EDGAR for filings — instead of static sample text.
@@ -33,6 +34,15 @@ export default function SiteOverlay({ site, onClose }: Props) {
       setFilingsLoading(false);
     });
   }, [site?.company]);
+
+  // Real yearly emissions for THIS site drive the sparkline
+  useEffect(() => {
+    if (!site) return;
+    setSiteYears(undefined);
+    fetchSiteTimeseries(site.id).then((rows) => {
+      if (rows && rows.length > 0) setSiteYears(rows.map((r) => r.tons));
+    });
+  }, [site?.id]);
 
   if (!site) return null;
 
@@ -58,7 +68,7 @@ export default function SiteOverlay({ site, onClose }: Props) {
       <div className={`site-delta ${direction}`}>
         {site.trend === "n/a" ? "no baseline data for this window" : `${site.trend} over selected window`}
       </div>
-      <SparkBars trendDirection={direction as "up" | "down" | ""} />
+      <SparkBars trendDirection={direction as "up" | "down" | ""} values={siteYears} />
 
       <button className="more-toggle" onClick={() => setNewsOpen((o) => !o)}>
         {newsLoading ? "Loading news…" : showingLive ? "Recent news (live)" : "Recent news"}{" "}

@@ -11,7 +11,9 @@ _FULL_TEXT_SEARCH = "https://efts.sec.gov/LATEST/search-index"
 
 
 async def search_filings(company_name: str, form_type: str = "10-K") -> list[dict]:
-    params = {"q": company_name, "forms": form_type}
+    # Quote the name: EDGAR full-text search otherwise fuzzy-matches any word,
+    # which produced misleading results for names like "Bharat Power Corp"
+    params = {"q": f'"{company_name}"', "forms": form_type}
     headers = {"User-Agent": settings.sec_edgar_user_agent}
 
     async with httpx.AsyncClient(timeout=10) as client:

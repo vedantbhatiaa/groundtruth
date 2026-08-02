@@ -4,6 +4,7 @@ import SparkBars from "./SparkBars";
 interface Props {
   sites: Site[];
   onBack: () => void;
+  onSelectCompany: (company: string) => void;
 }
 
 interface CompanyAgg {
@@ -19,7 +20,7 @@ interface CompanyAgg {
 // Card-grid company analysis, modeled on the Climate Change Tracker
 // reference: aggregates computed live from whatever sites are currently
 // filtered — so the filters, search, and this view all stay consistent.
-export default function AnalysisView({ sites, onBack }: Props) {
+export default function AnalysisView({ sites, onBack, onSelectCompany }: Props) {
   const byCompany = new Map<string, Site[]>();
   for (const s of sites) {
     if (!byCompany.has(s.company)) byCompany.set(s.company, []);
@@ -69,7 +70,7 @@ export default function AnalysisView({ sites, onBack }: Props) {
 
       <div className="analysis-grid">
         {aggs.map((a) => (
-          <div key={a.company} className="company-card">
+          <div key={a.company} className="company-card clickable" onClick={() => onSelectCompany(a.company)}>
             <div className="company-card-head">
               <span className="company-name display">{a.company}</span>
               <span

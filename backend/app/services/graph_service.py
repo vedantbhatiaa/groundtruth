@@ -68,3 +68,52 @@ def run_llm_cypher(query: str) -> list[dict]:
     """Entry point for the orchestrator. Raises UnsafeCypherError if rejected."""
     safe_query = validate(query)
     return run_read(safe_query)
+
+def company_timeseries(company: str) -> dict:
+    """Per-year emission totals and sector split for one company — powers
+    the deep-dive company view's charts with real graph data."""
+    years = run_read(
+        """
+        MATCH (c:Company {name: $company})-[:OWNS]->(s:Site)-[:EMITS]->(e:EmissionRecord)
+        RETURN e.year AS year, round(sum(e.tons) * 10) / 10 AS total
+        ORDER BY year
+        """,
+        company=company,
+    )
+    sectors = run_read(
+        """
+        MATCH (c:Company {name: $company})-[:OWNS]->(s:Site)-[:EMITS]->(e:EmissionRecord)
+        WITH s.sector AS sector, e.year AS year, sum(e.tons) AS total
+        ORDER BY year DESC
+        WITH sector, collect(total)[0] AS latest
+        RETURN sector, round(latest * 10) / 10 AS total
+        """,
+        company=company,
+    )
+    return {"years": years, "sectors": sectors}
+
+
+def stats_timeseries(industry: list[str] | None = None, country: str | None = None) -> list[dict]:
+    """Yearly totals for the current filter selection — powers the summary
+    card's sparkline with real data instead of decorative bars."""
+    return run_read(
+        """
+        MATCH (c:Company)-[:OWNS]->(s:Site)-[:LOCATED_IN]->(co:Country)
+        WHERE ($industry IS NULL OR c.industry IN $industry)
+          AND ($country IS NULL OR co.name = $country)
+        MATCH (s)-[:EMITS]->(e:EmissionRecord)
+        RETURN e.year AS year, round(sum(e.tons) * 10) / 10 AS total
+        ORDER BY year
+        """,
+        industry=industry, country=country,
+    )
+
+
+def site_timeseries(site_id: str) -> list[dict]:
+    return run_read(
+        """
+        MATCH (s:Site {id: $site_id})-[:EMITS]->(e:EmissionRecord)
+        RETURN e.year AS year, e.tons AS tons ORDER BY e.year
+        """,
+        site_id=site_id,
+    )

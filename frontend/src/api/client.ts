@@ -97,3 +97,55 @@ export async function fetchCompanyFilings(company: string): Promise<Filing[] | n
     return null;
   }
 }
+
+export interface YearTotal {
+  year: number;
+  total: number;
+}
+
+export async function fetchStatsTimeseries(
+  industry?: string[],
+  country?: string
+): Promise<YearTotal[] | null> {
+  try {
+    const params = new URLSearchParams();
+    industry?.forEach((i) => params.append("industry", i));
+    if (country) params.append("country", country);
+    const res = await fetch(`${BASE}/analytics/stats/timeseries?${params}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) throw new Error("stats fetch failed");
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export interface CompanyTimeseries {
+  years: YearTotal[];
+  sectors: { sector: string; total: number }[];
+}
+
+export async function fetchCompanyTimeseries(company: string): Promise<CompanyTimeseries | null> {
+  try {
+    const res = await fetch(`${BASE}/analytics/company/${encodeURIComponent(company)}/timeseries`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) throw new Error("company timeseries failed");
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchSiteTimeseries(siteId: string): Promise<{ year: number; tons: number }[] | null> {
+  try {
+    const res = await fetch(`${BASE}/sites/${encodeURIComponent(siteId)}/timeseries`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) throw new Error("site timeseries failed");
+    return await res.json();
+  } catch {
+    return null;
+  }
+}

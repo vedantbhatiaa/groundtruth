@@ -5,9 +5,10 @@ import SparkBars from "./SparkBars";
 interface Props {
   sites: Site[];
   label: string;
+  sparkValues?: number[];
 }
 
-export default function SummaryCard({ sites, label }: Props) {
+export default function SummaryCard({ sites, label, sparkValues }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   const totalCo2 = sites.reduce((sum, s) => sum + s.co2, 0);
@@ -27,7 +28,7 @@ export default function SummaryCard({ sites, label }: Props) {
       <div className="meta">
         <b>{sites.length}</b> sites across <b>{countries}</b> countries
       </div>
-      <SparkBars />
+      <SparkBars values={sparkValues} />
       <button className="more-toggle" onClick={() => setExpanded((e) => !e)}>
         More detail <span>{expanded ? "⌄" : "›"}</span>
       </button>
