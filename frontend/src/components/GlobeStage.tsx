@@ -66,9 +66,14 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
       },
     }));
 
-    // react-globe.gl sizes itself via width/height PROPS, not imperative
-    // method calls — this is what fixed the earlier "not a function" crash.
+    // ResizeObserver instead of window resize: the stage also changes size
+    // when the chat drawer opens/closes WITHOUT a window resize. Previously
+    // the canvas kept its old larger width, spilled over the drawer, and
+    // silently swallowed its clicks — the "panel works only after switching
+    // views and back" bug.
     useEffect(() => {
+      const el = containerRef.current;
+      if (!el) return;
       function resize() {
         if (!containerRef.current) return;
         setSize({
@@ -77,8 +82,13 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
         });
       }
       resize();
+      const observer = new ResizeObserver(resize);
+      observer.observe(el);
       window.addEventListener("resize", resize);
-      return () => window.removeEventListener("resize", resize);
+      return () => {
+        observer.disconnect();
+        window.removeEventListener("resize", resize);
+      };
     }, [visible]);
 
     useEffect(() => {
@@ -91,11 +101,12 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
     const texture = TEXTURES[theme][mapStyle];
     const atmo = ATMO[theme];
     const points = showSites ? sites : [];
+    const maxCo2 = Math.max(...sites.map((s) => s.co2 ?? 0), 0.001);
 
     return (
       <div
         ref={containerRef}
-        style={{ position: "absolute", inset: 0, display: visible ? "block" : "none" }}
+        style={{ position: "absolute", inset: 0, overflow: "hidden", display: visible ? "block" : "none" }}
       >
         <Globe
           ref={globeRef}
@@ -113,8 +124,8 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
           pointLat="lat"
           pointLng="lng"
           pointColor={(d: any) => intensityColor[(d as Site).intensity]}
-          pointAltitude={(d: any) => 0.02 + (d as Site).co2 / 40}
-          pointRadius={(d: any) => 0.35 + (d as Site).co2 / 12}
+          pointAltitude={(d: any) => 0.02 + 0.28 * Math.sqrt(((d as Site).co2 ?? 0) / maxCo2)}
+          pointRadius={(d: any) => 0.25 + 1.1 * Math.sqrt(((d as Site).co2 ?? 0) / maxCo2)}
           pointLabel={(d: any) => {
             const s = d as Site;
             return `<div style="font-family:Inter,sans-serif;font-size:12px;background:#131a24;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);color:#e7ecf2">${s.name}<br><span style="color:#8b95a5">${s.company}</span></div>`;

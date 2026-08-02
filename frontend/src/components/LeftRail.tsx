@@ -1,4 +1,5 @@
 import { Site, intensityColor } from "../data/sampleSites";
+import { fmtMt } from "../utils/format";
 
 const SECTORS = [
   { value: "coal", label: "Coal", cls: "on-amber" },
@@ -75,7 +76,7 @@ export default function LeftRail({
             <div key={s.id}>
               <div className="emitter-row" onClick={() => onSelectSite(s)}>
                 <span>{s.company?.split(" ")[0] ?? "—"}</span>
-                <span className="mono">{s.co2}M t</span>
+                <span className="mono">{fmtMt(s.co2)}</span>
               </div>
               <div className="bar">
                 <i style={{ width: `${(s.co2 / maxCo2) * 100}%`, background: intensityColor[s.intensity] }} />

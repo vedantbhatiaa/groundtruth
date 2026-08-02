@@ -1,5 +1,6 @@
 import { Site, intensityColor } from "../data/sampleSites";
 import SparkBars from "./SparkBars";
+import { fmtMt } from "../utils/format";
 
 interface Props {
   sites: Site[];
@@ -81,8 +82,8 @@ export default function AnalysisView({ sites, onBack, onSelectCompany }: Props) 
               </span>
             </div>
             <div className="company-big display">
-              {a.totalCo2.toFixed(1)}
-              <small>M t CO2e</small>
+              {fmtMt(a.totalCo2)}
+              <small>CO2e</small>
             </div>
             <div className="company-meta">
               {a.siteCount} sites · {a.countries.length} {a.countries.length === 1 ? "country" : "countries"} ·{" "}
@@ -101,7 +102,7 @@ export default function AnalysisView({ sites, onBack, onSelectCompany }: Props) 
                     <div className="sector-bar-track">
                       <i style={{ width: `${(co2 / maxSectorTotal) * 100}%` }} />
                     </div>
-                    <span className="sector-bar-value mono">{co2.toFixed(1)}</span>
+                    <span className="sector-bar-value mono">{fmtMt(co2)}</span>
                   </div>
                 ))}
             </div>

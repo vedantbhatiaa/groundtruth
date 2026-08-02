@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Site } from "../data/sampleSites";
 import SparkBars from "./SparkBars";
+import { fmtMt } from "../utils/format";
 
 interface Props {
   sites: Site[];
@@ -22,8 +23,8 @@ export default function SummaryCard({ sites, label, sparkValues }: Props) {
     <div className="summary-card">
       <div className="label">{label}</div>
       <div className="big display">
-        {totalCo2.toFixed(1)}
-        <small>M t CO2e</small>
+        {fmtMt(totalCo2)}
+        <small>CO2e</small>
       </div>
       <div className="meta">
         <b>{sites.length}</b> sites across <b>{countries}</b> countries

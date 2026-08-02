@@ -1,24 +1,25 @@
 import { useEffect, useState } from "react";
 import { Site } from "../data/sampleSites";
 import { fetchCompanyNews, fetchCompanyFilings, fetchSiteTimeseries, NewsItem, Filing } from "../api/client";
+import { fmtMt, fmtPct } from "../utils/format";
 import SparkBars from "./SparkBars";
 
 interface Props {
   site: Site | null;
+  /** All currently visible sites — used to compute this site's rank and shares. */
+  sites: Site[];
   onClose: () => void;
 }
 
-export default function SiteOverlay({ site, onClose }: Props) {
+export default function SiteOverlay({ site, sites, onClose }: Props) {
   const [newsOpen, setNewsOpen] = useState(false);
   const [filingsOpen, setFilingsOpen] = useState(false);
   const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
   const [filings, setFilings] = useState<Filing[] | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);
   const [filingsLoading, setFilingsLoading] = useState(false);
-  const [siteYears, setSiteYears] = useState<number[] | undefined>(undefined);
+  const [siteYears, setSiteYears] = useState<{ year: number; tons: number }[] | null>(null);
 
-  // Live lookups fire the moment a site is selected — GDELT for news,
-  // SEC EDGAR for filings — instead of static sample text.
   useEffect(() => {
     if (!site) return;
     setLiveNews(null);
@@ -35,16 +36,27 @@ export default function SiteOverlay({ site, onClose }: Props) {
     });
   }, [site?.company]);
 
-  // Real yearly emissions for THIS site drive the sparkline
   useEffect(() => {
     if (!site) return;
-    setSiteYears(undefined);
+    setSiteYears(null);
     fetchSiteTimeseries(site.id).then((rows) => {
-      if (rows && rows.length > 0) setSiteYears(rows.map((r) => r.tons));
+      if (rows && rows.length > 0) setSiteYears(rows);
     });
   }, [site?.id]);
 
   if (!site) return null;
+
+  // Derived analytics against the current view
+  const ranked = [...sites].sort((a, b) => (b.co2 ?? 0) - (a.co2 ?? 0));
+  const rank = ranked.findIndex((s) => s.id === site.id) + 1;
+  const viewTotal = sites.reduce((sum, s) => sum + (s.co2 ?? 0), 0);
+  const companySites = sites.filter((s) => s.company === site.company);
+  const companyTotal = companySites.reduce((sum, s) => sum + (s.co2 ?? 0), 0);
+
+  const latest = siteYears?.[siteYears.length - 1];
+  const prev = siteYears?.[siteYears.length - 2];
+  const yoy = latest && prev && prev.tons ? ((latest.tons - prev.tons) / prev.tons) * 100 : null;
+  const peak = siteYears?.reduce((best, r) => (r.tons > best.tons ? r : best), siteYears[0]);
 
   const direction = site.trend.startsWith("+") ? "up" : site.trend.startsWith("-") ? "down" : "";
   const showingLive = liveNews !== null && liveNews.length > 0;
@@ -54,21 +66,22 @@ export default function SiteOverlay({ site, onClose }: Props) {
 
   return (
     <div className="site-overlay open">
-      <button className="site-overlay-close" onClick={onClose}>
-        ✕
-      </button>
+      <button className="site-overlay-close" onClick={onClose}>✕</button>
       <div className="site-name display">{site.name}</div>
-      <div className="site-sub">
-        {site.company} · {site.sector} · {site.country}
-      </div>
-      <div className="site-big display">
-        {site.co2}
-        <small>M t CO2e</small>
-      </div>
+      <div className="site-sub">{site.company} · {site.sector} · {site.country}</div>
+      <div className="site-big display">{fmtMt(site.co2)}<small>CO2e</small></div>
       <div className={`site-delta ${direction}`}>
         {site.trend === "n/a" ? "no baseline data for this window" : `${site.trend} over selected window`}
       </div>
-      <SparkBars trendDirection={direction as "up" | "down" | ""} values={siteYears} />
+      <SparkBars trendDirection={direction as "up" | "down" | ""} values={siteYears?.map((r) => r.tons)} />
+
+      <div className="mini-kpis">
+        <div><span className="mini-kpi-label">Rank in view</span><b>#{rank} of {sites.length}</b></div>
+        <div><span className="mini-kpi-label">Share of view</span><b>{viewTotal ? ((site.co2 / viewTotal) * 100).toFixed(1) : "0"}%</b></div>
+        <div><span className="mini-kpi-label">Share of {site.company.split(" ")[0]}</span><b>{companyTotal ? ((site.co2 / companyTotal) * 100).toFixed(1) : "0"}%</b></div>
+        <div><span className="mini-kpi-label">YoY change</span><b style={{ color: yoy === null ? undefined : yoy >= 0 ? "var(--red)" : "var(--teal)" }}>{fmtPct(yoy)}</b></div>
+        {peak && <div><span className="mini-kpi-label">Peak year</span><b>{peak.year} · {fmtMt(peak.tons)}</b></div>}
+      </div>
 
       <button className="more-toggle" onClick={() => setNewsOpen((o) => !o)}>
         {newsLoading ? "Loading news…" : showingLive ? "Recent news (live)" : "Recent news"}{" "}
@@ -77,20 +90,12 @@ export default function SiteOverlay({ site, onClose }: Props) {
       <div className={`summary-detail ${newsOpen ? "open" : ""}`}>
         {newsToShow.map((n, i) =>
           n.url ? (
-            <a
-              key={i}
-              className="news-item"
-              href={n.url}
-              target="_blank"
-              rel="noreferrer"
-              style={{ display: "block", textDecoration: "none", color: "inherit" }}
-            >
+            <a key={i} className="news-item" href={n.url} target="_blank" rel="noreferrer"
+              style={{ display: "block", textDecoration: "none", color: "inherit" }}>
               {n.title}
             </a>
           ) : (
-            <div key={i} className="news-item">
-              {n.title}
-            </div>
+            <div key={i} className="news-item">{n.title}</div>
           )
         )}
       </div>

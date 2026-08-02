@@ -36,12 +36,13 @@ export default function FlatMap({ sites, visible, onSelectSite }: Props) {
         rectX = 0;
         rectY = (ch - rectH) / 2;
       }
+      const maxCo2 = Math.max(...sites.map((s) => s.co2 ?? 0), 0.001);
       setDots(
         sites.map((s) => ({
           site: s,
           x: rectX + ((s.lng + 180) / 360) * rectW,
           y: rectY + ((90 - s.lat) / 180) * rectH,
-          size: 8 + s.co2 * 1.6,
+          size: 7 + 24 * Math.sqrt((s.co2 ?? 0) / maxCo2),
         }))
       );
     }

@@ -382,3 +382,37 @@ html, body, #root { height: 100%; }
 .company-card.clickable:hover{border-color:var(--teal);transform:translateY(-2px);}
 .detail-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;}
 @media (max-width:900px){.detail-grid{grid-template-columns:1fr;}}
+
+/* ===== Round 3 polish ===== */
+/* Bigger legend */
+.legend{font-size:13px;padding:13px 17px;}
+.legend-dot{width:11px;height:11px;}
+.legend-row{gap:9px;margin-top:8px;}
+
+/* Bigger, clearer left rail */
+.rail{width:236px;padding:20px 18px;}
+.rail-label{font-size:11.5px;margin-bottom:12px;}
+.rail select{font-size:13.5px;padding:9px 11px;}
+.emitter-row{font-size:13.5px;padding:9px 0;}
+.chip{font-size:12.5px;padding:6px 12px;}
+
+/* Font coverage: selects/inputs were falling back to the system font */
+select, input, textarea{font-family:'Inter',sans-serif;}
+.emitter-row > span:first-child{font-family:'Space Grotesk','Inter',sans-serif;font-weight:500;}
+.site-card .name{font-family:'Space Grotesk','Inter',sans-serif;font-size:13px;}
+.bubble{font-size:13px;}
+.drawer-tab{font-size:12.5px;}
+.chat-input-row input{font-size:13px;}
+.sites-sort{user-select:none;}
+
+/* Site overlay mini KPI grid */
+.mini-kpis{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:6px;}
+.mini-kpis > div{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;}
+.mini-kpi-label{color:var(--text-faint);}
+.mini-kpis b{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:12px;}
+
+/* Company detail KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;}
+.kpi-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 13px;}
+.kpi-label{font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em;}
+.kpi-value{font-size:19px;font-weight:700;margin-top:4px;}

@@ -5,7 +5,6 @@ import FilterBar from "./components/FilterBar";
 import LeftRail from "./components/LeftRail";
 import GlobeStage, { GlobeStageHandle, MapStyle } from "./components/GlobeStage";
 import FlatMap from "./components/FlatMap";
-import IconRail from "./components/IconRail";
 import LegendCard from "./components/LegendCard";
 import SummaryCard from "./components/SummaryCard";
 import SiteOverlay from "./components/SiteOverlay";
@@ -185,10 +184,9 @@ export default function App() {
             />
             <FlatMap sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} />
 
-            <IconRail active={viewMode === "2d"} />
             <LegendCard active={legendOn} />
             <SummaryCard sites={visibleSites} label={summaryLabel} sparkValues={statsSpark} />
-            <SiteOverlay site={selectedSite} onClose={() => setSelectedSite(null)} />
+            <SiteOverlay site={selectedSite} sites={visibleSites} onClose={() => setSelectedSite(null)} />
 
             <ControlRow
               viewMode={viewMode}

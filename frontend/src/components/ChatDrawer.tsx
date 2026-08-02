@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Site, intensityColor } from "../data/sampleSites";
 import { sendChatMessage } from "../api/client";
+import { fmtMt } from "../utils/format";
 
 interface Message {
   role: "user" | "bot";
@@ -22,6 +23,7 @@ export default function ChatDrawer({ open, onClose, sites, activeSiteId, onSelec
   ]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [sortDesc, setSortDesc] = useState(true);
 
   async function send() {
     const text = input.trim();
@@ -40,7 +42,7 @@ export default function ChatDrawer({ open, onClose, sites, activeSiteId, onSelec
     }
   }
 
-  const sortedSites = [...sites].sort((a, b) => b.co2 - a.co2);
+  const sortedSites = [...sites].sort((a, b) => (sortDesc ? b.co2 - a.co2 : a.co2 - b.co2));
 
   return (
     <div className={`drawer ${open ? "open" : ""}`}>
@@ -84,7 +86,7 @@ export default function ChatDrawer({ open, onClose, sites, activeSiteId, onSelec
 
       <div className={`drawer-panel ${tab === "sites" ? "active" : ""}`}>
         <div className="sites-list">
-          <span className="sites-sort">Sort by emission rate ↓</span>
+          <span className="sites-sort" onClick={() => setSortDesc((d) => !d)}>Sort by emission rate {sortDesc ? "\u2193" : "\u2191"}</span>
           {sortedSites.map((s) => (
             <div key={s.id} className="site-card" onClick={() => onSelectSite(s)}>
               <div
@@ -97,7 +99,7 @@ export default function ChatDrawer({ open, onClose, sites, activeSiteId, onSelec
                   {s.country} · {s.lat?.toFixed(1) ?? "?"}, {s.lng?.toFixed(1) ?? "?"}
                 </div>
                 <div className="rate" style={{ color: intensityColor[s.intensity] }}>
-                  {s.co2}M t
+                  {fmtMt(s.co2)}
                 </div>
               </div>
             </div>
