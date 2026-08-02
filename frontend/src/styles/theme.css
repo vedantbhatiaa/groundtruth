@@ -421,3 +421,16 @@ select, input, textarea{font-family:'Inter',sans-serif;}
 .nav-brand{align-items:center;}
 .nav-brand .word{white-space:nowrap;font-size:15px;}
 .nav-brand .tag{margin-top:3px;white-space:nowrap;}
+
+/* Dashboard layout: everything visible as one screen, like the reference */
+.dashboard-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+@media (min-width:1280px){.dashboard-grid{grid-template-columns:repeat(2,1fr);}}
+.dashboard-grid .company-card{padding:13px 15px;}
+.kpi-row{gap:8px;margin-bottom:12px;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));}
+.kpi-box{padding:8px 11px;}
+.kpi-value{font-size:16px;}
+.kpi-label{font-size:9.5px;}
+.sites-scroll{max-height:230px;overflow-y:auto;}
+.analysis-view{padding:16px 22px;}
+.analysis-header{margin-bottom:12px;}
+.analysis-header h2{font-size:19px;}

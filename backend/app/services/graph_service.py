@@ -32,7 +32,9 @@ def list_sites(
     RETURN s.id AS id, s.name AS name, c.name AS company, co.name AS country,
            s.sector AS sector, s.lat AS lat, s.lon AS lng,
            e.tons AS co2, b.tons AS baseline, s.intensity AS intensity,
-           s.capacity AS capacity, s.asset_type AS asset_type
+           s.capacity AS capacity, s.asset_type AS asset_type,
+           s.generation_gwh AS generation_gwh, s.primary_fuel AS primary_fuel,
+           s.commissioning_year AS commissioning_year
     LIMIT 400
     """
     rows = run_read(query, industry=industry, country=country, year=year, base_year=base_year)

@@ -115,6 +115,16 @@ export default function App() {
       downloadCsv();
       return; // stays on current view; the download is the action
     }
+    if (target === "map3d") {
+      setView("map");
+      setViewMode("3d");
+      return;
+    }
+    if (target === "map2d") {
+      setView("map");
+      setViewMode("2d");
+      return;
+    }
     setView(target);
   }
 
@@ -129,6 +139,7 @@ export default function App() {
       <NavDrawer open={navOpen} onClose={() => setNavOpen(false)} onNavigate={handleNavigate} />
       <Header
         onOpenNav={() => setNavOpen(true)}
+        onHome={() => handleNavigate("map3d")}
         theme={theme}
         onToggleTheme={toggleTheme}
         searchQuery={searchQuery}

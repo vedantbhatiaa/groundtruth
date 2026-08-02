@@ -2,6 +2,7 @@ import { Theme } from "../hooks/useTheme";
 
 interface Props {
   onOpenNav: () => void;
+  onHome: () => void;
   theme: Theme;
   onToggleTheme: () => void;
   searchQuery: string;
@@ -11,6 +12,7 @@ interface Props {
 
 export default function Header({
   onOpenNav,
+  onHome,
   theme,
   onToggleTheme,
   searchQuery,
@@ -25,7 +27,7 @@ export default function Header({
         </svg>
       </button>
 
-      <div className="brand">
+      <div className="brand" onClick={onHome} style={{ cursor: "pointer" }} title="Back to the globe">
         <div className="mark display">G</div>
         <div>
           <span className="word">Groundtruth</span>

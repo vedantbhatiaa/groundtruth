@@ -44,6 +44,13 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
     const [size, setSize] = useState({ width: 800, height: 600 });
     const [countries, setCountries] = useState<any[]>([]);
     const [countryLabels, setCountryLabels] = useState<{ lat: number; lng: number; text: string }[]>([]);
+    const [altitude, setAltitude] = useState(2.5);
+
+    // Per-style behavior: default = clean globe (no borders, no names);
+    // satellite/terrain = borders always, names only when zoomed in close
+    // enough to read them (they were clipping half-off at far zoom).
+    const showBoundaries = mapStyle !== "default";
+    const showLabels = showBoundaries && altitude < 1.1;
 
     // Country boundaries + names (Natural Earth GeoJSON) — loaded once,
     // fails silently if the CDN is unreachable rather than breaking the globe.
@@ -166,7 +173,8 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
           onPointClick={(d: any) => onSelectSite(d as Site)}
           atmosphereColor={atmo.color}
           atmosphereAltitude={atmo.alt}
-          polygonsData={countries}
+          onZoom={(pov: any) => setAltitude(pov.altitude)}
+          polygonsData={showBoundaries ? countries : []}
           polygonCapColor={() => "rgba(0,0,0,0)"}
           polygonSideColor={() => "rgba(0,0,0,0)"}
           polygonStrokeColor={() => (theme === "light" ? "rgba(55,65,80,0.55)" : "rgba(190,215,255,0.30)")}
@@ -174,7 +182,7 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
           polygonLabel={(d: any) =>
             `<div style="font-family:Inter,sans-serif;font-size:12px;background:#131a24;padding:5px 9px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);color:#e7ecf2">${d.properties?.ADMIN ?? ""}</div>`
           }
-          labelsData={countryLabels}
+          labelsData={showLabels ? countryLabels : []}
           labelLat={(d: any) => d.lat}
           labelLng={(d: any) => d.lng}
           labelText={(d: any) => d.text}

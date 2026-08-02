@@ -6,11 +6,22 @@ Nothing in the rest of the app should read os.environ directly — import
 knows how configuration is wired.
 """
 
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Resolve the project-root .env by absolute path so it works no matter
+# which directory uvicorn is launched from. (Previously ".env" was
+# relative to the working directory — running from backend/ meant the
+# root .env was silently never read, which is why GROQ_API_KEY came
+# through empty even though it was set.)
+_PROJECT_ROOT_ENV = Path(__file__).resolve().parents[2] / ".env"
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=str(_PROJECT_ROOT_ENV), env_file_encoding="utf-8", extra="ignore"
+    )
 
     # Neo4j
     neo4j_uri: str = "bolt://localhost:7687"

@@ -47,7 +47,7 @@ export default function CompanyDetail({ company, sites, onBack, onSelectSite }: 
   const maxSector = Math.max(...sectors.map((s) => s.total), 0.001);
 
   const chartW = 460;
-  const chartH = 170;
+  const chartH = 130;
   const barW = years.length ? (chartW - 40) / years.length - 12 : 0;
 
   const kpis = [
@@ -82,7 +82,7 @@ export default function CompanyDetail({ company, sites, onBack, onSelectSite }: 
         ))}
       </div>
 
-      <div className="detail-grid">
+      <div className="dashboard-grid">
         <div className="company-card">
           <div className="rail-label" style={{ marginBottom: 10 }}>Emissions by year</div>
           {loading ? (
@@ -117,7 +117,7 @@ export default function CompanyDetail({ company, sites, onBack, onSelectSite }: 
           <div className="rail-label" style={{ marginBottom: 10 }}>Historic trend and projection</div>
           {years.length >= 2 ? (
             (() => {
-              const w = 460, h = 170, pad = 24;
+              const w = 460, h = 130, pad = 22;
               const lastIdx = years.length - 1;
               const slope = years[lastIdx].total - years[lastIdx - 1].total;
               const projected = [1, 2].map((k) => ({
@@ -166,7 +166,7 @@ export default function CompanyDetail({ company, sites, onBack, onSelectSite }: 
             const yearNums = [...new Set(sby.map((r) => r.year))].sort((a, b) => a - b);
             if (yearNums.length < 2) return <div className="analysis-sub">Only one year of records.</div>;
             const palette = ["var(--teal)", "var(--violet)", "var(--amber)", "var(--red)", "#7fb4ff", "#c9f27f"];
-            const w = 460, h = 170, pad = 24;
+            const w = 460, h = 130, pad = 22;
             const maxV = Math.max(...sby.map((r) => r.total), 0.001);
             const x = (yr: number) => pad + ((yr - yearNums[0]) / (yearNums[yearNums.length - 1] - yearNums[0])) * (w - pad * 2);
             const y = (v: number) => h - pad - (v / maxV) * (h - pad * 2);
@@ -217,7 +217,7 @@ export default function CompanyDetail({ company, sites, onBack, onSelectSite }: 
           </div>
         </div>
 
-        <div className="company-card" style={{ gridColumn: "1 / -1" }}>
+        <div className="company-card sites-scroll" style={{ gridColumn: "1 / -1" }}>
           <div className="rail-label" style={{ marginBottom: 10 }}>Sites, with share of company total</div>
           {[...companySites].sort((a, b) => b.co2 - a.co2).map((s) => (
             <div key={s.id} className="emitter-row" onClick={() => onSelectSite(s)}>

@@ -15,14 +15,11 @@ export default function NavDrawer({ open, onClose, onNavigate }: Props) {
       <nav className={`nav-drawer ${open ? "open" : ""}`}>
         <div className="nav-brand">
           <div className="mark display">G</div>
-          <div>
-            <div className="word display">Groundtruth</div>
-            <div className="tag">emissions, traced to source</div>
-          </div>
+          <div className="word display">Groundtruth</div>
         </div>
-        <a className="nav-item" onClick={() => go("map")}>Home</a>
+        <a className="nav-item" onClick={() => go("map3d")}>Home</a>
         <div className="nav-section">Track emissions</div>
-        <a className="nav-item sub" onClick={() => go("map")}>Explore map</a>
+        <a className="nav-item sub" onClick={() => go("map2d")}>Explore map</a>
         <a className="nav-item sub" onClick={() => go("analysis")}>Company analysis</a>
         <div className="nav-section">Resources</div>
         <a className="nav-item sub" onClick={() => go("downloads")}>Data downloads</a>

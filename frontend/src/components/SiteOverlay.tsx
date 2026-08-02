@@ -84,11 +84,20 @@ export default function SiteOverlay({ site, sites, onClose }: Props) {
       <SparkBars trendDirection={direction as "up" | "down" | ""} values={siteYears?.map((r) => r.tons)} />
 
       <div className="mini-kpis">
-        {site.asset_type ? (
-          <div><span className="mini-kpi-label">Asset type</span><b>{site.asset_type}</b></div>
+        {site.primary_fuel || site.asset_type ? (
+          <div><span className="mini-kpi-label">Type / fuel</span><b>{site.primary_fuel ?? site.asset_type}</b></div>
         ) : null}
         {site.capacity ? (
-          <div><span className="mini-kpi-label">Reported capacity</span><b>{site.capacity.toLocaleString()}</b></div>
+          <div><span className="mini-kpi-label">Capacity</span><b>{site.capacity.toLocaleString()} MW</b></div>
+        ) : null}
+        {site.generation_gwh ? (
+          <div><span className="mini-kpi-label">Est. generation</span><b>{Math.round(site.generation_gwh).toLocaleString()} GWh/yr</b></div>
+        ) : null}
+        {site.generation_gwh && site.co2 ? (
+          <div><span className="mini-kpi-label">Emissions intensity</span><b>{((site.co2 * 1_000_000) / (site.generation_gwh * 1000)).toFixed(2)} t/MWh</b></div>
+        ) : null}
+        {site.commissioning_year ? (
+          <div><span className="mini-kpi-label">Commissioned</span><b>{site.commissioning_year}</b></div>
         ) : null}
         <div><span className="mini-kpi-label">Rank in view</span><b>#{rank} of {sites.length}</b></div>
         <div><span className="mini-kpi-label">Share of view</span><b>{viewTotal ? ((site.co2 / viewTotal) * 100).toFixed(1) : "0"}%</b></div>

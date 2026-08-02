@@ -23,11 +23,45 @@ const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite
   const containerRef = useRef<HTMLDivElement>(null);
   const [dots, setDots] = useState<DotPosition[]>([]);
   const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const dragState = useRef<{ startX: number; startY: number; baseX: number; baseY: number; moved: boolean } | null>(null);
+
+  function clampOffset(x: number, y: number, s: number) {
+    const rect = containerRef.current?.getBoundingClientRect();
+    const maxX = rect ? (rect.width * (s - 1)) / 2 : 0;
+    const maxY = rect ? (rect.height * (s - 1)) / 2 : 0;
+    return { x: Math.max(-maxX, Math.min(maxX, x)), y: Math.max(-maxY, Math.min(maxY, y)) };
+  }
+
+  function setZoom(next: number) {
+    const s = Math.max(1, Math.min(4, next));
+    setScale(s);
+    setOffset((o) => clampOffset(o.x, o.y, s));
+  }
 
   useImperativeHandle(ref, () => ({
-    zoomIn: () => setScale((s) => Math.min(4, s * 1.3)),
-    zoomOut: () => setScale((s) => Math.max(1, s / 1.3)),
+    zoomIn: () => setZoom(scale * 1.3),
+    zoomOut: () => setZoom(scale / 1.3),
   }));
+
+  function onPointerDown(e: React.PointerEvent) {
+    dragState.current = { startX: e.clientX, startY: e.clientY, baseX: offset.x, baseY: offset.y, moved: false };
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  }
+  function onPointerMove(e: React.PointerEvent) {
+    const d = dragState.current;
+    if (!d) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    if (Math.abs(dx) + Math.abs(dy) > 4) d.moved = true;
+    setOffset(clampOffset(d.baseX + dx, d.baseY + dy, scale));
+  }
+  function onPointerUp() {
+    dragState.current = null;
+  }
+  function onWheel(e: React.WheelEvent) {
+    setZoom(e.deltaY < 0 ? scale * 1.15 : scale / 1.15);
+  }
 
   useEffect(() => {
     function project() {
@@ -63,8 +97,17 @@ const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite
   }, [sites, visible]);
 
   return (
-    <div ref={containerRef} className={`flatmap ${visible ? "active" : ""}`}>
-      <div style={{ position: "absolute", inset: 0, transform: `scale(${scale})`, transformOrigin: "center center", transition: "transform .2s ease" }}>
+    <div
+      ref={containerRef}
+      className={`flatmap ${visible ? "active" : ""}`}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerLeave={onPointerUp}
+      onWheel={onWheel}
+      style={{ cursor: scale > 1 ? "grab" : "default", touchAction: "none" }}
+    >
+      <div style={{ position: "absolute", inset: 0, transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`, transformOrigin: "center center", transition: dragState.current ? "none" : "transform .2s ease" }}>
       <img src="https://unpkg.com/three-globe/example/img/earth-day.jpg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       <div>
         {dots.map(({ site, x, y, size }) => (

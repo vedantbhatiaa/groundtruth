@@ -12,6 +12,9 @@ export interface Site {
   news: string[];
   capacity?: number | null;
   asset_type?: string | null;
+  generation_gwh?: number | null;
+  primary_fuel?: string | null;
+  commissioning_year?: number | null;
 }
 
 // Mirrors ingestion/sample_data/sites_sample.csv (2024 rows) — local fallback
