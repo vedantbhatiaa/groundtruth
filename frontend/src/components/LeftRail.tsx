@@ -11,6 +11,8 @@ const SECTORS = [
   { value: "nuclear", label: "Nuclear", cls: "on-teal" },
   { value: "biomass", label: "Biomass", cls: "on-teal" },
   { value: "waste", label: "Waste", cls: "on-amber" },
+  { value: "power-fossil", label: "Fossil (unsplit)", cls: "on-amber" },
+  { value: "geothermal", label: "Geothermal", cls: "on-teal" },
   { value: "power-other", label: "Power (other)", cls: "" },
   { value: "upstream", label: "Upstream", cls: "on-amber" },
   { value: "refining", label: "Refining", cls: "on-amber" },
@@ -20,6 +22,8 @@ const SECTORS = [
   { value: "aluminum", label: "Aluminum", cls: "on-teal" },
   { value: "chemicals", label: "Chemicals", cls: "" },
   { value: "pulp-paper", label: "Pulp & paper", cls: "" },
+  { value: "minerals", label: "Minerals", cls: "" },
+  { value: "other", label: "Other", cls: "" },
 ];
 const COUNTRIES = [
   "All countries", "United States", "Germany", "India", "Saudi Arabia",
@@ -58,6 +62,14 @@ export default function LeftRail({
   country,
   onChangeCountry,
 }: Props) {
+  const sectorCounts = sites.reduce<Record<string, number>>((acc, s) => {
+    const key = s.sector ?? "other";
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
+  const presentSectors = SECTORS.filter((s) => sectorCounts[s.value]);
+  const emptySectors = SECTORS.filter((s) => !sectorCounts[s.value]);
+
   const topEmitters = [...sites].sort((a, b) => b.co2 - a.co2).slice(0, 5);
   const maxCo2 = topEmitters[0]?.co2 ?? 1;
 
@@ -79,19 +91,35 @@ export default function LeftRail({
       </div>
 
       <div className="rail-section">
-        <div className="rail-label">Sector</div>
+        <div className="rail-label">
+          Sector
+          {activeSectors.length > 0 && (
+            <button className="rail-clear" onClick={() => activeSectors.forEach(onToggleSector)}>
+              clear
+            </button>
+          )}
+        </div>
+        {/* Only sectors actually present are clickable, each with its site
+            count — with thousands of facilities loaded, knowing the split
+            up front matters more than showing every possible label. */}
         <div className="chip-row">
-          {SECTORS.map((s) => (
+          {presentSectors.map((s) => (
             <div
               key={s.value}
               className={`chip ${activeSectors.includes(s.value) ? s.cls : ""}`}
               style={{ opacity: activeSectors.length === 0 || activeSectors.includes(s.value) ? 1 : 0.4 }}
               onClick={() => onToggleSector(s.value)}
+              title={`${sectorCounts[s.value]} sites`}
             >
-              {s.label}
+              {s.label} <b className="chip-count">{sectorCounts[s.value]}</b>
             </div>
           ))}
         </div>
+        {emptySectors.length > 0 && (
+          <div className="rail-note">
+            Not in this view: {emptySectors.map((s) => s.label).join(", ")}
+          </div>
+        )}
       </div>
 
       <div className="rail-section">

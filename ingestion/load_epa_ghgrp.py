@@ -106,7 +106,13 @@ def fetch_table(client: httpx.Client, table: str, year: int, limit: int) -> list
 # NAICS prefix -> (industry, sector). Facility rows carry naics_code, which
 # is a far more reliable sector signal than the single-letter subpart codes.
 NAICS_MAP = [
-    ("221112", ("power", "coal")),
+    # 221112 is "Fossil Fuel Electric Power Generation" — it covers coal, gas
+    # AND oil plants without distinguishing them, so calling it "coal" was
+    # wrong. Label it honestly; the WRI enrichment refines it to the real
+    # fuel where a plant match exists.
+    ("221112", ("power", "power-fossil")),
+    ("221116", ("power", "geothermal")),
+    ("221118", ("power", "power-other")),
     ("221117", ("power", "biomass")),
     ("221113", ("power", "nuclear")),
     ("221111", ("power", "hydro")),

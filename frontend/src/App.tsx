@@ -35,6 +35,13 @@ export default function App() {
   const [sites, setSites] = useState<Site[]>(sampleSites);
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>(["power"]);
   const [selectedYear, setSelectedYear] = useState("2024");
+  // Each source covers a different span. Selecting a year outside a source's
+  // range returns nothing — which looked like "the data didn't load" when it
+  // was really just 2024 against EPA data that stops at 2023.
+  const SOURCE_YEARS: Record<string, { min: number; max: number; label: string }> = {
+    climate_trace: { min: 2021, max: 2024, label: "Climate TRACE" },
+    epa: { min: 2010, max: 2023, label: "EPA GHGRP" },
+  };
   const [trendWindow, setTrendWindow] = useState<"5" | "10">("5");
   const [activeSectors, setActiveSectors] = useState<string[]>([]);
   const [country, setCountry] = useState("All countries");
@@ -104,6 +111,15 @@ export default function App() {
   const countryPanelOpen = !!panelCountry;
   // The site card only moves left once something occupies the right slot.
   const siteOnLeft = countryPanelOpen || !!compareSite;
+
+  // Snap the selected year into the active source's coverage.
+  useEffect(() => {
+    const range = SOURCE_YEARS[activeSource];
+    if (!range) return;
+    const y = parseInt(selectedYear, 10);
+    if (y > range.max) setSelectedYear(String(range.max));
+    else if (y < range.min) setSelectedYear(String(range.min));
+  }, [activeSource]);
 
   const globeHandle = useRef<GlobeStageHandle>(null);
   const flatHandle = useRef<FlatMapHandle>(null);
@@ -331,6 +347,12 @@ export default function App() {
                   <div><span className="mini-kpi-label">Facilities in view</span><b>{visibleSites.length}</b></div>
                   <div><span className="mini-kpi-label">Years available</span><b>2010–2023</b></div>
                 </div>
+                {parseInt(selectedYear, 10) > 2023 && (
+                  <p style={{ fontSize: 12.5, lineHeight: 1.6, color: "var(--amber)", marginTop: 10 }}>
+                    {selectedYear} is outside this source's range — switch the year
+                    filter to 2023 or earlier to see facilities.
+                  </p>
+                )}
               </div>
             )}
             {activeSource === "wri" && !selectedSite && (

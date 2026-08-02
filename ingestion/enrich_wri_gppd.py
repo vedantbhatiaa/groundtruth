@@ -77,7 +77,7 @@ def main():
     sites = run_read(
         """
         MATCH (c:Company)-[:OWNS]->(s:Site)
-        WHERE c.industry = 'power'
+        WHERE coalesce(s.industry, c.industry) = 'power'
         RETURN s.id AS id, s.name AS name, s.lat AS lat, s.lon AS lon
         """
     )
@@ -115,17 +115,29 @@ def main():
             comm_year = int(float(best["commissioning_year"])) if best["commissioning_year"] else None
         except ValueError:
             comm_year = None
+        # WRI carries the actual primary fuel, which is the only reliable way
+        # to split NAICS 221112 ("fossil fuel generation") into coal/gas/oil.
+        fuel = (best["primary_fuel"] or "").strip().lower()
+        FUEL_SECTOR = {
+            "coal": "coal", "gas": "gas", "oil": "oil", "petcoke": "coal",
+            "nuclear": "nuclear", "hydro": "hydro", "wind": "wind",
+            "solar": "solar", "biomass": "biomass", "waste": "waste",
+            "geothermal": "geothermal", "cogeneration": "gas",
+        }
+        refined_sector = FUEL_SECTOR.get(fuel)
+
         run_write(
             """
             MATCH (s:Site {id: $id})
-            SET s.capacity = coalesce($capacity, s.capacity),
+            SET s.sector = coalesce($refined_sector, s.sector),
+                s.capacity = coalesce($capacity, s.capacity),
                 s.generation_gwh = $generation_gwh,
                 s.primary_fuel = $primary_fuel,
                 s.commissioning_year = $comm_year,
                 s.wri_plant_name = $plant_name,
                 s.wri_owner = $owner
             """,
-            id=site["id"], capacity=capacity,
+            id=site["id"], capacity=capacity, refined_sector=refined_sector,
             generation_gwh=best["generation_gwh"],
             primary_fuel=best["primary_fuel"] or None,
             comm_year=comm_year,

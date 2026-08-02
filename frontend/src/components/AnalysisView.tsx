@@ -148,6 +148,13 @@ export default function AnalysisView({ sites, onBack, onSelectCompany }: Props) 
         </span>
       </div>
 
+      {countries.length === 0 && (
+        <div className="an-empty" style={{ padding: "26px 2px", maxWidth: 520, lineHeight: 1.7 }}>
+          No sites match the current filters. The usual cause is a year outside the
+          active source's coverage — Climate TRACE runs 2021–2024, EPA GHGRP runs
+          2010–2023 — or an industry filter that excludes every loaded sector.
+        </div>
+      )}
       <div className="country-grid">
         {countries.map((c, rank) => {
           const share = grandTotal ? (c.totalCo2 / grandTotal) * 100 : 0;

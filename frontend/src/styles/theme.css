@@ -820,3 +820,18 @@ select option{background:var(--bg-1);color:var(--text);}
    to an unbounded list of countries). */
 .analysis-view.an-listing{overflow-y:auto;}
 .an-listing .country-grid,.an-listing .company-grid{padding-bottom:16px;}
+
+/* Sector chips carry their site count so the distribution is legible
+   at a glance when thousands of facilities are loaded. */
+.chip-count{
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;
+  opacity:.65;margin-left:3px;
+}
+.rail-clear{
+  background:none;border:none;color:var(--teal);font-size:10px;cursor:pointer;
+  float:right;padding:0;font-family:'Inter',sans-serif;text-transform:none;letter-spacing:0;
+}
+.rail-clear:hover{text-decoration:underline;}
+.rail-note{
+  font-size:10.5px;color:var(--text-faint);line-height:1.5;margin-top:7px;
+}
