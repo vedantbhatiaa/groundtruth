@@ -136,3 +136,27 @@ def site_timeseries(site_id: str) -> list[dict]:
         """,
         site_id=site_id,
     )
+
+
+def country_timeseries(iso: str, from_year: int = 1990, to_year: int = 2024) -> list[dict]:
+    """Long-span country context from OWID (loaded by load_owid_country.py).
+    Separate from site emissions: this is national-scale, decades deep."""
+    return run_read(
+        """
+        MATCH (co:Country {iso: $iso})-[:HAS_STAT]->(cs:CountryStat)
+        WHERE cs.year >= $from_year AND cs.year <= $to_year
+        RETURN cs.year AS year, cs.co2 AS co2, cs.coal_co2 AS coal_co2,
+               cs.oil_co2 AS oil_co2, cs.gas_co2 AS gas_co2,
+               cs.cement_co2 AS cement_co2, cs.co2_per_capita AS co2_per_capita,
+               cs.energy_per_capita AS energy_per_capita,
+               cs.share_global_co2 AS share_global_co2,
+               cs.population AS population
+        ORDER BY year
+        """,
+        iso=iso, from_year=from_year, to_year=to_year,
+    )
+
+
+def country_iso_for_name(name: str) -> str | None:
+    rows = run_read("MATCH (co:Country {name: $name}) RETURN co.iso AS iso LIMIT 1", name=name)
+    return rows[0]["iso"] if rows else None

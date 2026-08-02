@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 import NavDrawer from "./components/NavDrawer";
 import FilterBar from "./components/FilterBar";
-import LeftRail from "./components/LeftRail";
+import LeftRail, { DataSource } from "./components/LeftRail";
 import GlobeStage, { GlobeStageHandle, MapStyle } from "./components/GlobeStage";
 import FlatMap, { FlatMapHandle } from "./components/FlatMap";
 import LegendCard from "./components/LegendCard";
@@ -14,6 +14,7 @@ import ChatFab from "./components/ChatFab";
 import AnalysisView from "./components/AnalysisView";
 import CompanyDetail from "./components/CompanyDetail";
 import InfoPage from "./components/InfoPage";
+import CountryPanel from "./components/CountryPanel";
 import { useTheme } from "./hooks/useTheme";
 import { fetchSites, checkHealth, fetchStatsTimeseries } from "./api/client";
 import { Site, sampleSites } from "./data/sampleSites";
@@ -45,6 +46,7 @@ export default function App() {
   const [mapStyle, setMapStyle] = useState<MapStyle>("default");
   const [backendOnline, setBackendOnline] = useState(false);
   const [statsSpark, setStatsSpark] = useState<number[] | undefined>(undefined);
+  const [activeSource, setActiveSource] = useState<DataSource>("all");
 
   const globeHandle = useRef<GlobeStageHandle>(null);
   const flatHandle = useRef<FlatMapHandle>(null);
@@ -82,6 +84,15 @@ export default function App() {
   let visibleSites = activeSectors.length
     ? sites.filter((s) => activeSectors.includes(s.sector))
     : sites;
+
+  // Data-source filter: "wri" narrows to sites the WRI join actually
+  // enriched (they're the only ones with capacity/generation), "owid" is
+  // country-scale so site markers are hidden entirely.
+  if (activeSource === "wri") {
+    visibleSites = visibleSites.filter((s) => s.generation_gwh != null || s.capacity != null);
+  } else if (activeSource === "owid") {
+    visibleSites = [];
+  }
 
   if (searchQuery.trim()) {
     const q = searchQuery.trim().toLowerCase();
@@ -179,6 +190,8 @@ export default function App() {
         <div className="shell">
           <LeftRail
             sites={visibleSites}
+            activeSource={activeSource}
+            onChangeSource={setActiveSource}
             activeSectors={activeSectors}
             onToggleSector={toggleSector}
             onSelectSite={setSelectedSite}
@@ -196,11 +209,25 @@ export default function App() {
               onSelectSite={setSelectedSite}
               visible={viewMode === "3d"}
             />
-            <FlatMap ref={flatHandle} sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} focusedSiteId={selectedSite?.id ?? null} />
+            <FlatMap ref={flatHandle} sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} focusedSiteId={selectedSite?.id ?? null} mapStyle={mapStyle} theme={theme} />
 
             <LegendCard active={legendOn} />
             <SummaryCard sites={visibleSites} label={summaryLabel} sparkValues={statsSpark} />
             <SiteOverlay site={selectedSite} sites={visibleSites} onClose={() => setSelectedSite(null)} />
+            {country !== "All countries" && !selectedSite && (
+              <CountryPanel country={country} onClose={() => setCountry("All countries")} />
+            )}
+            {activeSource === "owid" && country === "All countries" && (
+              <div className="country-panel">
+                <div className="site-name display">Our World in Data</div>
+                <div className="site-sub">Country context · 1950–2024</div>
+                <p style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text-dim)", marginTop: 12 }}>
+                  This source is country-scale rather than site-scale. Pick a country
+                  in the left rail to see decades of emissions, per-capita intensity,
+                  and fuel split.
+                </p>
+              </div>
+            )}
 
             <ControlRow
               viewMode={viewMode}

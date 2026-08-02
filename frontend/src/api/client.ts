@@ -161,3 +161,34 @@ export async function fetchSiteTimeseries(siteId: string): Promise<{ year: numbe
     return null;
   }
 }
+
+export interface CountryStat {
+  year: number;
+  co2: number | null;
+  coal_co2: number | null;
+  oil_co2: number | null;
+  gas_co2: number | null;
+  cement_co2: number | null;
+  co2_per_capita: number | null;
+  energy_per_capita: number | null;
+  share_global_co2: number | null;
+  population: number | null;
+}
+
+export async function fetchCountryTimeseries(
+  country: string,
+  fromYear = 1990,
+  toYear = 2024
+): Promise<CountryStat[] | null> {
+  try {
+    const res = await fetch(
+      `${BASE}/analytics/country/${encodeURIComponent(country)}/timeseries?from_year=${fromYear}&to_year=${toYear}`,
+      { signal: AbortSignal.timeout(10000) }
+    );
+    if (!res.ok) throw new Error("country timeseries failed");
+    return await res.json();
+  } catch (err) {
+    console.warn("[Groundtruth] country stats unavailable:", err);
+    return null;
+  }
+}

@@ -1,5 +1,21 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Site, intensityColor } from "../data/sampleSites";
+import { MapStyle } from "./GlobeStage";
+import { Theme } from "../hooks/useTheme";
+
+// Same textures as the 3D globe, so switching views keeps one visual language.
+const FLAT_TEXTURES: Record<Theme, Record<MapStyle, string>> = {
+  dark: {
+    default: "https://unpkg.com/three-globe/example/img/earth-night.jpg",
+    satellite: "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
+    terrain: "https://unpkg.com/three-globe/example/img/earth-topology.png",
+  },
+  light: {
+    default: "https://unpkg.com/three-globe/example/img/earth-day.jpg",
+    satellite: "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
+    terrain: "https://unpkg.com/three-globe/example/img/earth-topology.png",
+  },
+};
 
 interface Props {
   sites: Site[];
@@ -7,6 +23,8 @@ interface Props {
   onSelectSite: (site: Site) => void;
   /** Currently selected site id — the map focuses it, and zooms back out when it clears. */
   focusedSiteId?: string | null;
+  mapStyle: MapStyle;
+  theme: Theme;
 }
 
 interface DotPosition {
@@ -21,7 +39,7 @@ export interface FlatMapHandle {
   zoomOut: () => void;
 }
 
-const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite, focusedSiteId }, ref) => {
+const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite, focusedSiteId, mapStyle, theme }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dots, setDots] = useState<DotPosition[]>([]);
   const [scale, setScale] = useState(1);
@@ -129,7 +147,20 @@ const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite
       style={{ cursor: scale > 1 ? "grab" : "default", touchAction: "none" }}
     >
       <div style={{ position: "absolute", inset: 0, transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`, transformOrigin: "center center", transition: dragState.current ? "none" : "transform .2s ease" }}>
-      <img src="https://unpkg.com/three-globe/example/img/earth-day.jpg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <img src={FLAT_TEXTURES[theme][mapStyle]} alt=""
+        style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      {mapStyle !== "default" && (
+        <img
+          src="https://unpkg.com/three-globe/example/img/earth-topology.png"
+          alt=""
+          aria-hidden
+          style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover", mixBlendMode: theme === "dark" ? "screen" : "multiply",
+            opacity: mapStyle === "terrain" ? 0.55 : 0.3, pointerEvents: "none",
+          }}
+        />
+      )}
       <div>
         {dots.map(({ site, x, y, size }) => (
           <div
