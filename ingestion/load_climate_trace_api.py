@@ -28,14 +28,21 @@ API_BASES = [
 
 YEARS = list(range(2015, 2025))  # Climate TRACE coverage varies; missing years just skip
 
+# The fallback sector must describe the SLUG honestly. Previously
+# electricity-generation fell back to "gas" and oil-and-gas-transport to
+# "gas" too, so almost every asset was labelled gas regardless of what it
+# actually was — which is why sector analysis showed a single sector.
 SECTORS = {
-    "electricity-generation": ("power", "gas"),
+    "electricity-generation": ("power", "power-other"),
+    "coal-mining": ("power", "coal"),
     "oil-and-gas-production": ("oil", "upstream"),
-    "oil-and-gas-refining": ("oil", "upstream"),
-    "oil-and-gas-transport": ("oil", "gas"),
+    "oil-and-gas-refining": ("oil", "refining"),
+    "oil-and-gas-transport": ("oil", "transport"),
     "steel": ("manufacturing", "steel"),
     "cement": ("manufacturing", "cement"),
     "aluminum": ("manufacturing", "aluminum"),
+    "pulp-and-paper": ("manufacturing", "pulp-paper"),
+    "chemicals": ("manufacturing", "chemicals"),
 }
 
 ISO3_NAMES = {
@@ -149,9 +156,28 @@ def extract_emissions_for_year(asset, requested_year):
     return None, None
 
 
+# Broader fuel vocabulary, checked most-specific first. Anything that can't
+# be identified stays "power-other" rather than being mislabelled as gas.
+POWER_KEYWORDS = [
+    ("lignite", "coal"), ("anthracite", "coal"), ("coal", "coal"),
+    ("ccgt", "gas"), ("ocgt", "gas"), ("lng", "gas"), ("natural gas", "gas"), ("gas", "gas"),
+    ("diesel", "oil"), ("fuel oil", "oil"), ("petroleum", "oil"), ("oil", "oil"),
+    ("photovoltaic", "solar"), ("solar", "solar"), ("pv", "solar"),
+    ("wind", "wind"), ("offshore", "wind"),
+    ("hydro", "hydro"), ("dam", "hydro"),
+    ("nuclear", "nuclear"),
+    ("biomass", "biomass"), ("bagasse", "biomass"), ("biogas", "biomass"),
+    ("geothermal", "geothermal"),
+    ("waste", "waste"), ("incinerat", "waste"),
+]
+
+
 def guess_power_sector(asset, fallback):
-    text = f"{get_field(asset, 'AssetType', default='')} {get_field(asset, 'Name', default='')}".lower()
-    for keyword, sector in [("coal", "coal"), ("solar", "solar"), ("wind", "solar"), ("gas", "gas")]:
+    text = " ".join(
+        str(get_field(asset, f, default="") or "")
+        for f in ("AssetType", "Name", "PrimaryFuel", "Fuel")
+    ).lower()
+    for keyword, sector in POWER_KEYWORDS:
         if keyword in text:
             return sector
     return fallback

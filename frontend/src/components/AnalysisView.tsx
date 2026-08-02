@@ -96,7 +96,7 @@ export default function AnalysisView({ sites, onBack, onSelectCompany }: Props) 
 
   if (activeCountry) {
     return (
-      <div className="analysis-view">
+      <div className="analysis-view an-listing">
         <div className="analysis-header">
           <button className="back-btn" onClick={() => setActiveCountry(null)}>← All countries</button>
           <h2 className="display">{activeCountry}</h2>
@@ -139,7 +139,7 @@ export default function AnalysisView({ sites, onBack, onSelectCompany }: Props) 
   }
 
   return (
-    <div className="analysis-view">
+    <div className="analysis-view an-listing">
       <div className="analysis-header">
         <button className="back-btn" onClick={onBack}>← Back to map</button>
         <h2 className="display">Analysis by country</h2>

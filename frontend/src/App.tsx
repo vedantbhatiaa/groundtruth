@@ -146,7 +146,11 @@ export default function App() {
   // Data-source filter: "wri" narrows to sites the WRI join actually
   // enriched (they're the only ones with capacity/generation), "owid" is
   // country-scale so site markers are hidden entirely.
-  if (activeSource === "wri") {
+  if (activeSource === "climate_trace") {
+    visibleSites = visibleSites.filter((s) => (s.source ?? "").startsWith("climate_trace"));
+  } else if (activeSource === "epa") {
+    visibleSites = visibleSites.filter((s) => s.source === "epa_ghgrp" || s.id.startsWith("epa-"));
+  } else if (activeSource === "wri") {
     visibleSites = visibleSites.filter((s) => s.generation_gwh != null || s.capacity != null);
   } else if (activeSource === "owid") {
     visibleSites = [];
@@ -307,6 +311,27 @@ export default function App() {
                   }
                 }}
               />
+            )}
+            {activeSource === "epa" && !selectedSite && (
+              <div className="country-panel">
+                <div className="site-name display">EPA GHGRP</div>
+                <div className="site-sub">US Greenhouse Gas Reporting Program</div>
+                <p style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text-dim)", marginTop: 12 }}>
+                  Facility-level emissions <b>reported by operators</b> under legal
+                  obligation, 2010–2023. Roughly 8,000 US facilities above the
+                  25,000 t CO2e threshold.
+                </p>
+                <p style={{ fontSize: 12.5, lineHeight: 1.6, color: "var(--text-faint)", marginTop: 10 }}>
+                  Kept separate from Climate TRACE rather than merged: Climate
+                  TRACE <i>models</i> emissions from observation, GHGRP records
+                  what operators <i>declare</i>. Same unit, different method — so
+                  compare them, don't add them.
+                </p>
+                <div className="mini-kpis" style={{ marginTop: 10 }}>
+                  <div><span className="mini-kpi-label">Facilities in view</span><b>{visibleSites.length}</b></div>
+                  <div><span className="mini-kpi-label">Years available</span><b>2010–2023</b></div>
+                </div>
+              </div>
             )}
             {activeSource === "wri" && !selectedSite && (
               <div className="country-panel">

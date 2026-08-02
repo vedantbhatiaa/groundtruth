@@ -16,6 +16,8 @@ export interface Site {
   primary_fuel?: string | null;
   commissioning_year?: number | null;
   baseline_year?: number | null;
+  /** Which dataset this record came from: climate_trace_api | epa_ghgrp. */
+  source?: string | null;
 }
 
 // Mirrors ingestion/sample_data/sites_sample.csv (2024 rows) — local fallback

@@ -4,11 +4,22 @@ import { fmtMt } from "../utils/format";
 const SECTORS = [
   { value: "coal", label: "Coal", cls: "on-amber" },
   { value: "gas", label: "Gas", cls: "on-amber" },
+  { value: "oil", label: "Oil", cls: "on-amber" },
   { value: "solar", label: "Solar", cls: "on-teal" },
+  { value: "wind", label: "Wind", cls: "on-teal" },
+  { value: "hydro", label: "Hydro", cls: "on-teal" },
+  { value: "nuclear", label: "Nuclear", cls: "on-teal" },
+  { value: "biomass", label: "Biomass", cls: "on-teal" },
+  { value: "waste", label: "Waste", cls: "on-amber" },
+  { value: "power-other", label: "Power (other)", cls: "" },
   { value: "upstream", label: "Upstream", cls: "on-amber" },
+  { value: "refining", label: "Refining", cls: "on-amber" },
+  { value: "transport", label: "Transport", cls: "on-amber" },
   { value: "steel", label: "Steel", cls: "on-amber" },
   { value: "cement", label: "Cement", cls: "on-amber" },
   { value: "aluminum", label: "Aluminum", cls: "on-teal" },
+  { value: "chemicals", label: "Chemicals", cls: "" },
+  { value: "pulp-paper", label: "Pulp & paper", cls: "" },
 ];
 const COUNTRIES = [
   "All countries", "United States", "Germany", "India", "Saudi Arabia",
@@ -16,11 +27,12 @@ const COUNTRIES = [
   "Nigeria", "Egypt", "Norway", "Canada",
 ];
 
-export type DataSource = "all" | "climate_trace" | "wri" | "owid";
+export type DataSource = "all" | "climate_trace" | "epa" | "wri" | "owid";
 
 export const DATA_SOURCES: { value: DataSource; label: string; detail: string }[] = [
   { value: "all", label: "All sources", detail: "Everything currently loaded" },
-  { value: "climate_trace", label: "Climate TRACE", detail: "Site-level emissions by year" },
+  { value: "climate_trace", label: "Climate TRACE", detail: "Modelled site emissions, 2021-2024" },
+  { value: "epa", label: "EPA GHGRP", detail: "Reported US facilities, 2010-2023" },
   { value: "wri", label: "WRI Power Plants", detail: "Capacity, generation, intensity" },
   { value: "owid", label: "Our World in Data", detail: "Country context, 1950-2024" },
 ];

@@ -343,7 +343,9 @@ export default function CompanyDetail({
           </div>
 
           <div className="an-card an-chart-card">
-            <div className="an-ct">Historic trend and projection</div>
+            <div className="an-ct" title="Straight-line extrapolation of the last two years — indicative only">
+              Historic trend · linear projection
+            </div>
             {years.length < 2 ? (
               <div className="an-empty">Need at least two years of records for a trend.</div>
             ) : (

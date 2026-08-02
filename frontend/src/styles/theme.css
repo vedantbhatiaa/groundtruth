@@ -804,3 +804,19 @@ select option{background:var(--bg-1);color:var(--text);}
   .an-card{min-height:180px;}
   .an-sites-scroll{max-height:300px;}
 }
+
+/* Long Climate TRACE names (e.g. "Venezuela_Maturin_Conventional onshore")
+   were overflowing their cards — underscores give the browser no break
+   opportunities, so force wrapping and keep clear of the close button. */
+.site-name, .an-rank .nm, .entity-name, .company-name, .pname{
+  overflow-wrap:anywhere;word-break:break-word;hyphens:auto;
+}
+.site-overlay .site-name{padding-right:26px;line-height:1.25;}
+.site-overlay .site-sub{overflow-wrap:anywhere;}
+.an-rank .nm{white-space:normal;line-height:1.3;}
+
+/* Country / company grids: scroll within the view instead of clipping the
+   last row (the single-screen rule applies to the company dashboard, not
+   to an unbounded list of countries). */
+.analysis-view.an-listing{overflow-y:auto;}
+.an-listing .country-grid,.an-listing .company-grid{padding-bottom:16px;}

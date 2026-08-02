@@ -107,6 +107,12 @@ export default function SiteOverlay({ site, sites, side = "right", stacked = fal
         {site.commissioning_year ? (
           <div><span className="mini-kpi-label">Commissioned</span><b>{site.commissioning_year}</b></div>
         ) : null}
+        {site.source && (
+          <div>
+            <span className="mini-kpi-label">Data source</span>
+            <b>{site.source === "epa_ghgrp" ? "EPA GHGRP (reported)" : "Climate TRACE (modelled)"}</b>
+          </div>
+        )}
         <div><span className="mini-kpi-label">Rank in view</span><b>#{rank} of {sites.length}</b></div>
         <div><span className="mini-kpi-label">Share of view</span><b>{viewTotal ? ((site.co2 / viewTotal) * 100).toFixed(1) : "0"}%</b></div>
         <div><span className="mini-kpi-label">Share of {site.company.split(" ")[0]}</span><b>{companyTotal ? ((site.co2 / companyTotal) * 100).toFixed(1) : "0"}%</b></div>
