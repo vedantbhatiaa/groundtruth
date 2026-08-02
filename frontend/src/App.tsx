@@ -165,6 +165,8 @@ export default function App() {
         <CompanyDetail
           company={view.slice("company:".length)}
           sites={visibleSites}
+          selectedYear={parseInt(selectedYear, 10)}
+          trendWindow={parseInt(trendWindow, 10)}
           onBack={() => setView("analysis")}
           onSelectSite={(s) => {
             setSelectedSite(s);
@@ -194,7 +196,7 @@ export default function App() {
               onSelectSite={setSelectedSite}
               visible={viewMode === "3d"}
             />
-            <FlatMap ref={flatHandle} sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} />
+            <FlatMap ref={flatHandle} sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} focusedSiteId={selectedSite?.id ?? null} />
 
             <LegendCard active={legendOn} />
             <SummaryCard sites={visibleSites} label={summaryLabel} sparkValues={statsSpark} />

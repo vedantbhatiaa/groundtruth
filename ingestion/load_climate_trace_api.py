@@ -59,9 +59,9 @@ MERGE (co:Country {iso: $country_iso})
   ON CREATE SET co.name = $country
 MERGE (s:Site {id: $site_id})
   ON CREATE SET s.name = $site_name, s.lat = $lat, s.lon = $lon,
-                s.sector = $sector, s.intensity = $intensity,
                 s.capacity = $capacity, s.asset_type = $asset_type,
                 s.activity = $activity
+  SET s.sector = $sector, s.intensity = $intensity, s.industry = $industry
 MERGE (c)-[:OWNS]->(s)
 MERGE (s)-[:LOCATED_IN]->(co)
 MERGE (e:EmissionRecord {site_id: $site_id, year: $year, gas: 'co2e'})

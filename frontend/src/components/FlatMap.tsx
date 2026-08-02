@@ -5,6 +5,8 @@ interface Props {
   sites: Site[];
   visible: boolean;
   onSelectSite: (site: Site) => void;
+  /** Currently selected site id — the map focuses it, and zooms back out when it clears. */
+  focusedSiteId?: string | null;
 }
 
 interface DotPosition {
@@ -19,7 +21,7 @@ export interface FlatMapHandle {
   zoomOut: () => void;
 }
 
-const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite }, ref) => {
+const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite, focusedSiteId }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dots, setDots] = useState<DotPosition[]>([]);
   const [scale, setScale] = useState(1);
@@ -62,6 +64,25 @@ const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite
   function onWheel(e: React.WheelEvent) {
     setZoom(e.deltaY < 0 ? scale * 1.15 : scale / 1.15);
   }
+
+  // Click-to-focus: when a site is selected, glide in on it; when the
+  // overlay closes (focusedSiteId cleared), glide back to the full map.
+  useEffect(() => {
+    if (!visible) return;
+    if (!focusedSiteId) {
+      setScale(1);
+      setOffset({ x: 0, y: 0 });
+      return;
+    }
+    const dot = dots.find((d) => d.site.id === focusedSiteId);
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!dot || !rect) return;
+    const s = 2.4;
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    setScale(s);
+    setOffset({ x: (cx - dot.x) * s, y: (cy - dot.y) * s });
+  }, [focusedSiteId, visible, dots]);
 
   useEffect(() => {
     function project() {

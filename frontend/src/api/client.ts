@@ -29,11 +29,14 @@ export async function fetchSites(
     if (country) params.append("country", country);
     if (year) params.append("year", String(year));
     if (trendWindow) params.append("trend_window", String(trendWindow));
-    const res = await fetch(`${BASE}/sites?${params}`, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) throw new Error(`backend returned ${res.status}`);
+    const res = await fetch(`${BASE}/sites?${params}`, { signal: AbortSignal.timeout(20000) });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`backend returned ${res.status}: ${body.slice(0, 300)}`);
+    }
     return await res.json();
   } catch (err) {
-    console.warn("[Groundtruth] /api/sites unreachable, using bundled sample data:", err);
+    console.error("[Groundtruth] /api/sites FAILED — falling back to fictional sample data. Reason:", err);
     return sampleSites;
   }
 }
@@ -127,11 +130,19 @@ export interface CompanyTimeseries {
   sectors_by_year?: { year: number; sector: string; total: number }[];
 }
 
-export async function fetchCompanyTimeseries(company: string): Promise<CompanyTimeseries | null> {
+export async function fetchCompanyTimeseries(
+  company: string,
+  yearFrom?: number,
+  yearTo?: number
+): Promise<CompanyTimeseries | null> {
   try {
-    const res = await fetch(`${BASE}/analytics/company/${encodeURIComponent(company)}/timeseries`, {
-      signal: AbortSignal.timeout(5000),
-    });
+    const params = new URLSearchParams();
+    if (yearFrom) params.append("year_from", String(yearFrom));
+    if (yearTo) params.append("year_to", String(yearTo));
+    const res = await fetch(
+      `${BASE}/analytics/company/${encodeURIComponent(company)}/timeseries?${params}`,
+      { signal: AbortSignal.timeout(8000) }
+    );
     if (!res.ok) throw new Error("company timeseries failed");
     return await res.json();
   } catch {

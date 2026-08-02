@@ -1,28 +1,33 @@
 import { useEffect, useState } from "react";
 import { Site, intensityColor } from "../data/sampleSites";
 import { fetchCompanyTimeseries, CompanyTimeseries } from "../api/client";
+import { YAxis, HoverLayer } from "./ChartFrame";
 import { fmtMt, fmtPct } from "../utils/format";
 
 interface Props {
   company: string;
   sites: Site[];
+  /** Year currently selected in the filter bar — highlighted in the charts. */
+  selectedYear: number;
+  /** 5 or 10 — how far back the charts reach. */
+  trendWindow: number;
   onBack: () => void;
   onSelectSite: (site: Site) => void;
 }
 
 /** Deep-dive per-company analysis: KPI row, yearly emissions chart from
     real graph records, sector split, and the full site list with shares. */
-export default function CompanyDetail({ company, sites, onBack, onSelectSite }: Props) {
+export default function CompanyDetail({ company, sites, selectedYear, trendWindow, onBack, onSelectSite }: Props) {
   const [series, setSeries] = useState<CompanyTimeseries | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    fetchCompanyTimeseries(company).then((r) => {
+    fetchCompanyTimeseries(company, selectedYear - trendWindow, selectedYear).then((r) => {
       setSeries(r);
       setLoading(false);
     });
-  }, [company]);
+  }, [company, selectedYear, trendWindow]);
 
   const companySites = sites.filter((s) => s.company === company);
   const viewTotal = sites.reduce((sum, s) => sum + (s.co2 ?? 0), 0);
@@ -90,26 +95,39 @@ export default function CompanyDetail({ company, sites, onBack, onSelectSite }: 
           ) : years.length === 0 ? (
             <div className="analysis-sub">No yearly records (backend offline or data not loaded).</div>
           ) : (
-            <svg viewBox={`0 0 ${chartW} ${chartH + 26}`} style={{ width: "100%" }}>
-              {years.map((y, i) => {
-                const h = (y.total / maxTotal) * chartH;
-                const x = 20 + i * ((chartW - 40) / years.length);
-                return (
-                  <g key={y.year}>
-                    <rect x={x} y={chartH - h} width={barW} height={h} rx={3}
-                      fill="var(--teal)" opacity={i === years.length - 1 ? 1 : 0.55} />
-                    <text x={x + barW / 2} y={chartH - h - 6} textAnchor="middle"
-                      style={{ fill: "var(--text-dim)", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}>
-                      {fmtMt(y.total)}
-                    </text>
-                    <text x={x + barW / 2} y={chartH + 16} textAnchor="middle"
-                      style={{ fill: "var(--text-faint)", fontSize: 10.5 }}>
-                      {y.year}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
+            <HoverLayer>
+              {(setHover) => (
+                <svg viewBox={`0 0 ${chartW} ${chartH + 26}`} style={{ width: "100%" }}>
+                  <YAxis max={maxTotal} width={chartW} height={chartH} pad={14} />
+                  {years.map((y, i) => {
+                    const h = (y.total / maxTotal) * (chartH - 28);
+                    const slot = (chartW - 60) / years.length;
+                    const x = 54 + i * slot;
+                    const bw = Math.min(barW, slot - 10);
+                    const isSelected = y.year === selectedYear;
+                    return (
+                      <g key={y.year}
+                        onMouseEnter={() => setHover({
+                          x: ((x + bw / 2) / chartW) * 100,
+                          y: ((chartH - 14 - h) / (chartH + 26)) * 100,
+                          text: `${y.year}: ${fmtMt(y.total)} CO2e`,
+                        })}
+                        onMouseLeave={() => setHover(null)}
+                        style={{ cursor: "pointer" }}>
+                        <rect x={x} y={chartH - 14 - h} width={bw} height={h} rx={3}
+                          fill={isSelected ? "var(--teal)" : "var(--teal)"}
+                          opacity={isSelected ? 1 : 0.45} />
+                        <text x={x + bw / 2} y={chartH + 12} textAnchor="middle"
+                          style={{ fill: isSelected ? "var(--text)" : "var(--text-faint)",
+                                   fontSize: 10.5, fontWeight: isSelected ? 600 : 400 }}>
+                          {y.year}
+                        </text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              )}
+            </HoverLayer>
           )}
         </div>
 
@@ -172,21 +190,43 @@ export default function CompanyDetail({ company, sites, onBack, onSelectSite }: 
             const y = (v: number) => h - pad - (v / maxV) * (h - pad * 2);
             return (
               <>
-                <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%" }}>
-                  {sectorNames.map((sec, si) => {
-                    const pts = yearNums.map((yr) => {
-                      const row = sby.find((r) => r.year === yr && r.sector === sec);
-                      return { yr, v: row ? row.total : 0 };
-                    });
-                    const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${x(p.yr)},${y(p.v)}`).join(" ");
-                    return <path key={sec} d={path} fill="none" stroke={palette[si % palette.length]} strokeWidth={2.2} />;
-                  })}
-                  {yearNums.map((yr) => (
-                    <text key={yr} x={x(yr)} y={h - 6} textAnchor="middle" style={{ fill: "var(--text-dim)", fontSize: 10 }}>
-                      {String(yr).slice(2)}
-                    </text>
-                  ))}
-                </svg>
+                <HoverLayer>
+                  {(setHover) => (
+                    <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%" }}>
+                      <YAxis max={maxV} width={w} height={h} pad={pad} />
+                      {sectorNames.map((sec, si) => {
+                        const pts = yearNums.map((yr) => {
+                          const row = sby.find((r) => r.year === yr && r.sector === sec);
+                          return { yr, v: row ? row.total : 0 };
+                        });
+                        const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${x(p.yr)},${y(p.v)}`).join(" ");
+                        return (
+                          <g key={sec}>
+                            <path d={path} fill="none" stroke={palette[si % palette.length]} strokeWidth={2.2} />
+                            {pts.map((p) => (
+                              <circle key={p.yr} cx={x(p.yr)} cy={y(p.v)} r={4}
+                                fill={palette[si % palette.length]}
+                                opacity={p.yr === selectedYear ? 1 : 0.35}
+                                onMouseEnter={() => setHover({
+                                  x: (x(p.yr) / w) * 100,
+                                  y: (y(p.v) / h) * 100,
+                                  text: `${sec} ${p.yr}: ${fmtMt(p.v)}`,
+                                })}
+                                onMouseLeave={() => setHover(null)}
+                                style={{ cursor: "pointer" }} />
+                            ))}
+                          </g>
+                        );
+                      })}
+                      {yearNums.map((yr) => (
+                        <text key={yr} x={x(yr)} y={h - 6} textAnchor="middle"
+                          style={{ fill: yr === selectedYear ? "var(--text)" : "var(--text-faint)", fontSize: 10 }}>
+                          {String(yr).slice(2)}
+                        </text>
+                      ))}
+                    </svg>
+                  )}
+                </HoverLayer>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 6 }}>
                   {sectorNames.map((sec, si) => (
                     <span key={sec} style={{ fontSize: 11, color: "var(--text-dim)" }}>

@@ -25,7 +25,7 @@ def list_sites(
     base_year = year - trend_window
     query = """
     MATCH (c:Company)-[:OWNS]->(s:Site)-[:LOCATED_IN]->(co:Country)
-    WHERE ($industry IS NULL OR c.industry IN $industry)
+    WHERE ($industry IS NULL OR coalesce(s.industry, c.industry) IN $industry)
       AND ($country IS NULL OR co.name = $country)
     OPTIONAL MATCH (s)-[:EMITS]->(e:EmissionRecord {year: $year})
     OPTIONAL MATCH (s)-[:EMITS]->(b:EmissionRecord {year: $base_year})
@@ -72,16 +72,22 @@ def run_llm_cypher(query: str) -> list[dict]:
     safe_query = validate(query)
     return run_read(safe_query)
 
-def company_timeseries(company: str) -> dict:
+def company_timeseries(
+    company: str,
+    year_from: int | None = None,
+    year_to: int | None = None,
+) -> dict:
     """Per-year emission totals and sector split for one company — powers
     the deep-dive company view's charts with real graph data."""
     years = run_read(
         """
         MATCH (c:Company {name: $company})-[:OWNS]->(s:Site)-[:EMITS]->(e:EmissionRecord)
+        WHERE ($year_from IS NULL OR e.year >= $year_from)
+          AND ($year_to IS NULL OR e.year <= $year_to)
         RETURN e.year AS year, round(sum(e.tons) * 10) / 10 AS total
         ORDER BY year
         """,
-        company=company,
+        company=company, year_from=year_from, year_to=year_to,
     )
     sectors = run_read(
         """
@@ -96,10 +102,12 @@ def company_timeseries(company: str) -> dict:
     sectors_by_year = run_read(
         """
         MATCH (c:Company {name: $company})-[:OWNS]->(s:Site)-[:EMITS]->(e:EmissionRecord)
+        WHERE ($year_from IS NULL OR e.year >= $year_from)
+          AND ($year_to IS NULL OR e.year <= $year_to)
         RETURN e.year AS year, s.sector AS sector, round(sum(e.tons) * 10) / 10 AS total
         ORDER BY year
         """,
-        company=company,
+        company=company, year_from=year_from, year_to=year_to,
     )
     return {"years": years, "sectors": sectors, "sectors_by_year": sectors_by_year}
 
@@ -110,7 +118,7 @@ def stats_timeseries(industry: list[str] | None = None, country: str | None = No
     return run_read(
         """
         MATCH (c:Company)-[:OWNS]->(s:Site)-[:LOCATED_IN]->(co:Country)
-        WHERE ($industry IS NULL OR c.industry IN $industry)
+        WHERE ($industry IS NULL OR coalesce(s.industry, c.industry) IN $industry)
           AND ($country IS NULL OR co.name = $country)
         MATCH (s)-[:EMITS]->(e:EmissionRecord)
         RETURN e.year AS year, round(sum(e.tons) * 10) / 10 AS total
