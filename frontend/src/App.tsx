@@ -42,6 +42,9 @@ export default function App() {
 
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
   const [compareSite, setCompareSite] = useState<Site | null>(null);
+  // Lets the user close the auto-opened country panel without it snapping
+  // straight back; reset whenever the selection changes.
+  const [countryPanelDismissed, setCountryPanelDismissed] = useState(false);
   const [viewMode, setViewMode] = useState<"3d" | "2d">("3d");
   const [legendOn, setLegendOn] = useState(false);
   const [sitesOn, setSitesOn] = useState(true);
@@ -53,7 +56,20 @@ export default function App() {
   // Ctrl/Cmd/Shift-click adds a second site for side-by-side comparison;
   // a plain click always resets to a single selection.
   function handleSelectSite(site: Site, additive = false) {
-    if (additive && selectedSite && site.id !== selectedSite.id) {
+    setCountryPanelDismissed(false);
+    // Re-clicking an already-selected site deselects it, whichever slot
+    // it's in and whether or not a modifier is held. When the primary is
+    // removed but a comparison site remains, that one gets promoted.
+    if (selectedSite?.id === site.id) {
+      setSelectedSite(compareSite);
+      setCompareSite(null);
+      return;
+    }
+    if (compareSite?.id === site.id) {
+      setCompareSite(null);
+      return;
+    }
+    if (additive && selectedSite) {
       setCompareSite(site);
       return;
     }
@@ -64,9 +80,30 @@ export default function App() {
   function clearSelection() {
     setSelectedSite(null);
     setCompareSite(null);
+    setCountryPanelDismissed(false);
   }
 
   const selectedIds = [selectedSite?.id, compareSite?.id].filter(Boolean) as string[];
+  // A country typed into the search bar should drive the country panel too,
+  // not just filter markers — searching "India" now behaves like picking it
+  // from the dropdown.
+  const searchedCountry =
+    country === "All countries" && searchQuery.trim()
+      ? sites.find((s) => (s.country ?? "").toLowerCase() === searchQuery.trim().toLowerCase())?.country ?? null
+      : null;
+  const filterCountry = country !== "All countries" ? country : searchedCountry;
+
+  // Selecting a site opens its OWN country's context automatically, so the
+  // site sits on the left and its national picture on the right. A second
+  // site takes the right slot instead and the country panel steps aside.
+  const panelCountry = compareSite
+    ? null
+    : countryPanelDismissed
+      ? null
+      : selectedSite?.country ?? filterCountry;
+  const countryPanelOpen = !!panelCountry;
+  // The site card only moves left once something occupies the right slot.
+  const siteOnLeft = countryPanelOpen || !!compareSite;
 
   const globeHandle = useRef<GlobeStageHandle>(null);
   const flatHandle = useRef<FlatMapHandle>(null);
@@ -238,17 +275,67 @@ export default function App() {
             {activeSource !== "owid" && (
               <SummaryCard sites={visibleSites} label={summaryLabel} sparkValues={statsSpark} />
             )}
-            <SiteOverlay site={selectedSite} sites={visibleSites} onClose={clearSelection} />
+            <SiteOverlay
+              site={selectedSite}
+              sites={visibleSites}
+              side={siteOnLeft ? "left" : "right"}
+              onClose={clearSelection}
+            />
             {compareSite && (
-              <SiteOverlay site={compareSite} sites={visibleSites} side="left" onClose={clearSelection} />
+              <SiteOverlay
+                site={compareSite}
+                sites={visibleSites}
+                side="right"
+                onClose={() => setCompareSite(null)}
+              />
             )}
             {compareSite && selectedSite && (
               <div className="compare-badge">
                 Comparing 2 sites · {fmtMt(Math.abs((selectedSite.co2 ?? 0) - (compareSite.co2 ?? 0)))} apart
               </div>
             )}
-            {country !== "All countries" && !selectedSite && (
-              <CountryPanel country={country} onClose={() => setCountry("All countries")} />
+            {countryPanelOpen && panelCountry && (
+              <CountryPanel
+                country={panelCountry}
+                onClose={() => {
+                  if (selectedSite) {
+                    // Site-driven: just dismiss the panel, keep the site.
+                    setCountryPanelDismissed(true);
+                  } else {
+                    setCountry("All countries");
+                    if (searchedCountry) setSearchQuery("");
+                  }
+                }}
+              />
+            )}
+            {activeSource === "wri" && !selectedSite && (
+              <div className="country-panel">
+                <div className="site-name display">WRI Power Plants</div>
+                <div className="site-sub">Global Power Plant Database</div>
+                <p style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text-dim)", marginTop: 12 }}>
+                  The map is narrowed to sites matched against WRI's database of
+                  ~35,000 plants. Those matches add four fields you can see by
+                  clicking any remaining site:
+                </p>
+                <dl className="entity-stats" style={{ marginTop: 10 }}>
+                  <div><dt>Capacity</dt><dd>MW</dd></div>
+                  <div><dt>Est. generation</dt><dd>GWh/yr</dd></div>
+                  <div><dt>Primary fuel</dt><dd>coal, gas, hydro…</dd></div>
+                  <div><dt>Commissioned</dt><dd>year built</dd></div>
+                </dl>
+                <p style={{ fontSize: 12.5, lineHeight: 1.6, color: "var(--text-faint)", marginTop: 10 }}>
+                  Capacity and generation together give real emissions intensity
+                  (t CO2e per MWh) — the one metric emissions alone can't provide.
+                  Matching is a spatial join, so only sites that are a single
+                  identifiable plant match; district-level assets don't.
+                </p>
+                <div className="mini-kpis" style={{ marginTop: 10 }}>
+                  <div>
+                    <span className="mini-kpi-label">Matched sites in view</span>
+                    <b>{visibleSites.length}</b>
+                  </div>
+                </div>
+              </div>
             )}
             {activeSource === "owid" && country === "All countries" && (
               <div className="country-panel">

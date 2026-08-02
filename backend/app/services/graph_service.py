@@ -38,16 +38,40 @@ def list_sites(
     LIMIT 400
     """
     rows = run_read(query, industry=industry, country=country, year=year, base_year=base_year)
+
+    # Climate TRACE coverage starts in 2021, so a 5YR window asks for a 2019
+    # baseline that doesn't exist and every site reported "no baseline data".
+    # Fall back to each site's EARLIEST record and label the trend with the
+    # year it's actually measured from, rather than showing nothing.
+    earliest = {
+        r["site_id"]: r
+        for r in run_read(
+            """
+            MATCH (s:Site)-[:EMITS]->(e:EmissionRecord)
+            WITH s.id AS site_id, min(e.year) AS first_year
+            MATCH (s2:Site {id: site_id})-[:EMITS]->(e2:EmissionRecord {year: first_year})
+            RETURN site_id, first_year, e2.tons AS first_tons
+            """
+        )
+    }
+
     for row in rows:
         co2 = row.get("co2")
         baseline = row.pop("baseline", None)
+        baseline_year = base_year
+        if not baseline:
+            fallback = earliest.get(row.get("id"))
+            if fallback and fallback["first_year"] != year:
+                baseline = fallback["first_tons"]
+                baseline_year = fallback["first_year"]
         if co2 is not None and baseline:
             pct = (co2 - baseline) / baseline * 100
             row["trend"] = f"{'+' if pct >= 0 else ''}{pct:.0f}%"
+            row["baseline_year"] = baseline_year
         else:
-            # No record for the baseline year (e.g. 10YR window on data that
-            # only goes back 5 years) — report that honestly.
+            # Genuinely only one year of data for this site.
             row["trend"] = "n/a"
+            row["baseline_year"] = None
         row.setdefault("news", [])
     # Drop sites with no record for the selected year rather than showing
     # them with a null co2 that breaks sizing on the globe.

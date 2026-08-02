@@ -18,6 +18,25 @@
     --globe-bg: radial-gradient(circle at 50% 45%, #0c1420 0%, #060a10 70%);
     --page-bg: radial-gradient(ellipse at 30% 0%, #0e1420 0%, #080b10 55%);
     --header-bg: #10161f;
+
+    /* Deep Gradient — dark analysis theme */
+    --an-bg: radial-gradient(1200px 700px at 20% -10%, #1d1546 0%, #0b0a18 60%);
+    --an-card: rgba(28,22,62,0.72);
+    --an-card-2: rgba(30,24,66,0.60);
+    --an-border: rgba(140,120,230,0.20);
+    --an-border-strong: rgba(150,130,240,0.34);
+    --an-text: #eae6ff;
+    --an-dim: #a99fe0;
+    --an-faint: #7d74b8;
+    --an-grad: linear-gradient(92deg,#7af5d0,#9d8bff 62%,#ff8fc7);
+    --an-bar: linear-gradient(180deg,#9d8bff,rgba(157,139,255,0.14));
+    --an-bar-on: linear-gradient(180deg,#7af5d0,rgba(122,245,208,0.20));
+    --an-glow: 0 0 22px rgba(122,245,208,0.34);
+    --an-sunk: rgba(120,100,200,0.16);
+    --an-c1: #7af5d0; --an-c2: #9d8bff; --an-c3: #ffc46b; --an-c4: #ff8fc7;
+    --an-up: #ff7a8f; --an-down: #7af5d0;
+    --an-radius: 14px;
+    --an-hover: rgba(122,245,208,0.07);
   }
   [data-theme="light"]{
     --bg-1: #e7ebf0;
@@ -37,6 +56,25 @@
     --globe-bg: radial-gradient(circle at 50% 45%, #dfe6ec 0%, #eef1f5 70%);
     --page-bg: #eef1f5;
     --header-bg: #ffffff;
+
+    /* Daylight — light analysis theme (its own design, not an inversion) */
+    --an-bg: #f7f6f3;
+    --an-card: #ffffff;
+    --an-card-2: #ffffff;
+    --an-border: #e3e0d8;
+    --an-border-strong: #d2cec2;
+    --an-text: #1a1a1a;
+    --an-dim: #5a5a55;
+    --an-faint: #96938c;
+    --an-grad: linear-gradient(92deg,#1b4dd6,#7b3fa0 58%,#d9622b);
+    --an-bar: #1b4dd6;
+    --an-bar-on: linear-gradient(92deg,#1b4dd6,#7b3fa0 58%,#d9622b);
+    --an-glow: none;
+    --an-sunk: #f0eee9;
+    --an-c1: #1b4dd6; --an-c2: #d9622b; --an-c3: #0f9b8e; --an-c4: #7b3fa0;
+    --an-up: #d9622b; --an-down: #0f9b8e;
+    --an-radius: 4px;
+    --an-hover: #f0eee9;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
@@ -507,4 +545,262 @@ select option{background:var(--bg-1);color:var(--text);}
   padding:6px 15px;font-size:11.5px;color:var(--teal);
   font-family:'Space Grotesk','Inter',sans-serif;letter-spacing:0.03em;
   backdrop-filter:blur(10px);white-space:nowrap;
+}
+
+/* ===== Analysis: country-first entity cards ===== */
+.country-grid,.company-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:13px;
+}
+.entity-card{
+  display:flex;flex-direction:column;text-align:left;width:100%;
+  background:var(--panel);border:1px solid var(--border);border-radius:13px;
+  padding:15px 16px 14px;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:border-color .16s ease,transform .16s ease,box-shadow .16s ease;
+}
+.entity-card:hover{
+  border-color:var(--teal);transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(0,0,0,0.22);
+}
+.entity-head{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+.entity-rank{
+  font-size:11px;color:var(--text-faint);letter-spacing:0.06em;
+  border:1px solid var(--border);border-radius:5px;padding:2px 6px;flex-shrink:0;
+}
+.entity-name{
+  font-family:'Space Grotesk','Inter',sans-serif;font-size:14px;font-weight:600;
+  color:var(--text);line-height:1.3;flex:1;
+}
+.dot-badge{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.entity-value{
+  font-size:27px;font-weight:700;letter-spacing:-0.02em;line-height:1;
+  color:var(--text);margin-bottom:10px;
+}
+.entity-share-track{height:4px;border-radius:2px;background:var(--bg-1);overflow:hidden;}
+.entity-share-track i{
+  display:block;height:100%;border-radius:2px;
+  background:linear-gradient(90deg,var(--teal),var(--violet));
+}
+.entity-meta{
+  display:flex;justify-content:space-between;gap:8px;
+  font-size:11.5px;color:var(--text-dim);margin-top:7px;
+}
+.mini-sectors{margin-top:11px;display:flex;flex-direction:column;gap:5px;}
+.mini-sector-row{
+  display:grid;grid-template-columns:58px 1fr 52px;align-items:center;gap:8px;
+  font-size:10.5px;color:var(--text-faint);text-transform:capitalize;
+}
+.mini-sector-track{height:3px;border-radius:2px;background:var(--bg-1);overflow:hidden;}
+.mini-sector-track i{display:block;height:100%;background:var(--teal);opacity:.75;}
+.mini-sector-row .mono{text-align:right;}
+.entity-stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin:11px 0 0;
+  padding-top:10px;border-top:1px solid var(--border);
+}
+.entity-stats div{display:flex;flex-direction:column;gap:2px;}
+.entity-stats dt{
+  font-size:9.5px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-faint);
+}
+.entity-stats dd{
+  margin:0;font-size:12.5px;color:var(--text);
+  font-family:'JetBrains Mono',monospace;text-transform:capitalize;
+}
+
+/* Comparison card stacked over the country panel */
+.site-overlay.stacked{top:28px;right:28px;z-index:18;}
+
+/* ============================================================
+   COMPANY ANALYSIS — final design
+   Dark = Deep Gradient, light = Daylight. Both drive off the
+   --an-* tokens above, so the layout code is written once.
+   ============================================================ */
+.analysis-view{background:var(--an-bg);color:var(--an-text);}
+
+.an-header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+.an-header h2{font-family:'Space Grotesk',sans-serif;font-size:20px;letter-spacing:-.01em;margin:0;}
+.an-sub{font-size:12px;color:var(--an-faint);}
+.an-back{
+  background:var(--an-card-2);border:1px solid var(--an-border);color:var(--an-dim);
+  border-radius:var(--an-radius);padding:6px 12px;font-size:12px;cursor:pointer;
+  font-family:'Space Grotesk','Inter',sans-serif;transition:.15s;
+}
+.an-back:hover{border-color:var(--an-c1);color:var(--an-c1);}
+
+/* Editorial split: hero rail + stacked column (light mode's layout,
+   which reads well in both once the tokens change). */
+.an-split{display:grid;grid-template-columns:minmax(272px,.85fr) 2fr;gap:14px;margin-bottom:14px;}
+@media (max-width:980px){.an-split{grid-template-columns:1fr;}}
+.an-stack{display:flex;flex-direction:column;gap:14px;min-width:0;}
+.an-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+@media (max-width:980px){.an-row2{grid-template-columns:1fr;}}
+
+.an-card{
+  background:var(--an-card);border:1px solid var(--an-border);
+  border-radius:var(--an-radius);padding:17px 19px;backdrop-filter:blur(14px);min-width:0;
+}
+.an-ct{
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--an-faint);
+  margin-bottom:13px;padding-bottom:9px;border-bottom:1px solid var(--an-border);
+}
+
+/* Hero */
+.an-hero{display:flex;flex-direction:column;height:100%;}
+.an-eyebrow{
+  font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--an-c1);margin-bottom:11px;
+}
+.an-huge{
+  font-family:'Space Grotesk',sans-serif;font-size:52px;font-weight:700;
+  letter-spacing:-.04em;line-height:.94;
+  background:var(--an-grad);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.an-unit{font-size:13px;color:var(--an-faint);font-weight:500;margin-top:7px;}
+.an-delta{
+  display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:11.5px;
+  background:var(--an-sunk);border-radius:calc(var(--an-radius) / 2);padding:6px 10px;
+  width:fit-content;font-family:'JetBrains Mono',monospace;
+}
+.an-delta.up{color:var(--an-up);} .an-delta.down{color:var(--an-down);}
+.an-facts{margin-top:14px;padding-top:0;}
+.an-fact{
+  display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:12px;
+  border-bottom:1px dotted var(--an-border);
+}
+.an-fact span{color:var(--an-faint);}
+.an-fact b{font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--an-text);}
+
+/* KPI strip */
+.an-kpis{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border:1px solid var(--an-border);background:var(--an-card);border-radius:var(--an-radius);overflow:hidden;
+}
+@media (max-width:700px){.an-kpis{grid-template-columns:repeat(2,1fr);}}
+.an-kpis > div{padding:12px 15px;border-right:1px solid var(--an-border);}
+.an-kpis > div:last-child{border-right:none;}
+.an-kpis .k{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--an-faint);}
+.an-kpis .v{
+  font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;
+  margin-top:5px;letter-spacing:-.02em;color:var(--an-text);
+}
+.an-kpis .v.up{color:var(--an-up);} .an-kpis .v.down{color:var(--an-down);}
+.an-kpis .v.acc{
+  background:var(--an-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+/* Horizontal year bars */
+.an-hrow{display:grid;grid-template-columns:42px 1fr 66px;align-items:center;gap:11px;margin-bottom:9px;}
+.an-hyr{font-size:11.5px;color:var(--an-faint);font-family:'JetBrains Mono',monospace;}
+.an-htrack{height:22px;background:var(--an-sunk);border-radius:calc(var(--an-radius) / 3);overflow:hidden;}
+.an-hfill{height:100%;background:var(--an-bar);opacity:.4;transition:width .3s ease;}
+.an-hfill.on{opacity:1;background:var(--an-bar-on);box-shadow:var(--an-glow);}
+.an-hval{
+  font-size:11.5px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--an-dim);
+}
+
+/* Sector rows */
+.an-srow{display:grid;grid-template-columns:66px 1fr 62px;align-items:center;gap:10px;margin-bottom:8px;font-size:11px;}
+.an-slabel{color:var(--an-dim);text-transform:capitalize;}
+.an-strack{height:7px;border-radius:4px;background:var(--an-sunk);overflow:hidden;}
+.an-strack i{display:block;height:100%;border-radius:4px;background:var(--an-grad);}
+.an-sval{text-align:right;color:var(--an-faint);font-family:'JetBrains Mono',monospace;font-size:10.5px;}
+
+/* Ranked site list */
+.an-rank{
+  display:grid;grid-template-columns:24px 1fr 70px 78px;align-items:center;gap:11px;
+  padding:10px 0;border-bottom:1px solid var(--an-border);font-size:12.5px;cursor:pointer;
+  background:none;border-left:none;border-right:none;border-top:none;width:100%;text-align:left;
+  color:var(--an-text);font-family:'Inter',sans-serif;transition:background .15s ease;
+}
+.an-rank:hover{background:var(--an-hover);}
+.an-rank .n{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--an-faint);}
+.an-rank .nm{font-family:'Space Grotesk',sans-serif;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.an-rank .nm small{color:var(--an-faint);font-weight:400;font-family:'Inter',sans-serif;}
+.an-rank .bar{height:5px;background:var(--an-sunk);border-radius:3px;overflow:hidden;}
+.an-rank .bar i{display:block;height:100%;background:var(--an-grad);}
+.an-rank .vv{text-align:right;font-family:'JetBrains Mono',monospace;color:var(--an-dim);}
+
+/* Donut legend */
+.an-donut{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.an-dleg{flex:1;min-width:130px;}
+.an-dleg-row{
+  display:grid;grid-template-columns:11px 1fr auto;align-items:center;gap:9px;
+  padding:6px 0;border-bottom:1px solid var(--an-border);font-size:11.5px;color:var(--an-dim);
+}
+.an-dleg-row em{width:11px;height:11px;border-radius:2px;display:inline-block;}
+.an-dleg-row b{font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--an-text);}
+.an-empty{font-size:12px;color:var(--an-faint);line-height:1.6;}
+
+/* ============================================================
+   COMPANY ANALYSIS — single-screen dashboard layout
+   Everything fits one viewport; only genuinely long lists
+   (sites) scroll, and they scroll inside their own card.
+   Same rules drive both Deep Gradient and Daylight.
+   ============================================================ */
+.analysis-view{
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;
+  padding:14px 18px 16px;gap:0;
+}
+.an-header{flex-shrink:0;margin-bottom:11px;}
+
+.an-shell{
+  flex:1;min-height:0;display:grid;gap:11px;
+  grid-template-columns:minmax(252px,0.78fr) 2.2fr;
+}
+
+/* Left rail: identity, composition, national context */
+.an-left{display:grid;gap:11px;min-height:0;grid-template-rows:auto auto 1fr;}
+.an-right{display:grid;gap:11px;min-height:0;grid-template-rows:auto 1fr 1fr;grid-template-columns:1fr 1fr;}
+.an-right > .an-kpis{grid-column:1 / -1;}
+
+/* Cards flex internally so charts fill the space they're given */
+.an-card{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:13px 15px;}
+.an-ct{flex-shrink:0;margin-bottom:10px;padding-bottom:8px;}
+
+/* Hero: tightened so the number and facts read as one block */
+.an-hero{gap:0;}
+.an-huge{font-size:44px;line-height:.95;}
+.an-unit{margin-top:5px;font-size:12px;}
+.an-delta{margin-top:10px;}
+.an-facts{margin-top:12px;padding-top:0;}
+.an-fact{padding:5.5px 0;font-size:11.5px;}
+
+/* KPI strip sits tight */
+.an-kpis > div{padding:9px 13px;}
+.an-kpis .v{font-size:18px;margin-top:3px;}
+
+/* Charts scale to their card instead of forcing height */
+.an-chart{width:100%;flex:1;min-height:0;}
+.an-mini-chart{width:100%;margin-top:auto;flex-shrink:0;}
+
+/* Year bars spread across whatever height the card gets */
+.an-years{justify-content:flex-start;}
+.an-years .an-hrow{margin-bottom:0;padding:4px 0;flex-shrink:0;}
+.an-years .an-htrack{height:19px;}
+
+/* Donut card: horizontal so it doesn't leave a large empty block */
+.an-donut{display:flex;align-items:center;gap:14px;flex:1;min-height:0;}
+.an-donut-svg{width:92px;height:92px;flex-shrink:0;}
+.an-dleg{flex:1;min-width:0;overflow-y:auto;max-height:100%;}
+.an-dleg-row{padding:4.5px 0;font-size:11px;}
+
+/* The one intentionally scrollable region: the ranked site list */
+.an-sites-scroll{flex:1;min-height:0;overflow-y:auto;margin-right:-6px;padding-right:6px;}
+.an-sites-scroll::-webkit-scrollbar{width:7px;}
+.an-sites-scroll::-webkit-scrollbar-thumb{background:var(--an-border-strong);border-radius:4px;}
+.an-sites-scroll::-webkit-scrollbar-track{background:transparent;}
+.an-rank{padding:7px 0;font-size:11.5px;}
+
+/* Auto-placement fills: kpis span the top, then years | trend, sector | sites */
+.an-years,.an-chart-card,.an-sites{min-height:0;}
+.an-sites .an-ct{margin-bottom:6px;}
+
+.an-inline-legend{flex-shrink:0;display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;}
+
+/* Below this width a single screen stops being realistic — allow scroll */
+@media (max-width:1100px), (max-height:620px){
+  .analysis-view{overflow-y:auto;}
+  .an-shell{grid-template-columns:1fr;}
+  .an-left,.an-right{grid-template-rows:none;grid-template-columns:1fr;}
+  .an-card{min-height:180px;}
+  .an-sites-scroll{max-height:300px;}
 }

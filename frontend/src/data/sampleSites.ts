@@ -15,6 +15,7 @@ export interface Site {
   generation_gwh?: number | null;
   primary_fuel?: string | null;
   commissioning_year?: number | null;
+  baseline_year?: number | null;
 }
 
 // Mirrors ingestion/sample_data/sites_sample.csv (2024 rows) — local fallback

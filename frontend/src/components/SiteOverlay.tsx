@@ -8,12 +8,14 @@ interface Props {
   site: Site | null;
   /** "left" renders the comparison card opposite the primary one. */
   side?: "left" | "right";
+  /** Lift above the country panel when the two share the right side. */
+  stacked?: boolean;
   /** All currently visible sites — used to compute this site's rank and shares. */
   sites: Site[];
   onClose: () => void;
 }
 
-export default function SiteOverlay({ site, sites, side = "right", onClose }: Props) {
+export default function SiteOverlay({ site, sites, side = "right", stacked = false, onClose }: Props) {
   const [newsOpen, setNewsOpen] = useState(false);
   const [filingsOpen, setFilingsOpen] = useState(false);
   const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
@@ -75,13 +77,17 @@ export default function SiteOverlay({ site, sites, side = "right", onClose }: Pr
     : site.news.map((n) => ({ title: n, url: "" }));
 
   return (
-    <div className={`site-overlay open ${side === "left" ? "left" : ""}`}>
+    <div className={`site-overlay open ${side === "left" ? "left" : ""} ${stacked ? "stacked" : ""}`}>
       <button className="site-overlay-close" onClick={onClose}>✕</button>
       <div className="site-name display">{site.name}</div>
       <div className="site-sub">{site.company} · {site.sector} · {site.country}</div>
       <div className="site-big display">{fmtMt(site.co2)}<small>CO2e</small></div>
       <div className={`site-delta ${direction}`}>
-        {site.trend === "n/a" ? "no baseline data for this window" : `${site.trend} over selected window`}
+        {site.trend === "n/a"
+          ? "only one year of records for this site"
+          : site.baseline_year
+            ? `${site.trend} since ${site.baseline_year}`
+            : `${site.trend} over selected window`}
       </div>
       <SparkBars trendDirection={direction as "up" | "down" | ""} values={siteYears?.map((r) => r.tons)} />
 
