@@ -35,22 +35,22 @@ interface Props {
   showSites: boolean;
   onSelectSite: (site: Site) => void;
   visible: boolean;
+  /** True while a site card is open — rotation pauses so the selected
+      marker stays put and doesn't drift out of view. */
+  paused?: boolean;
 }
 
 const GlobeStage = forwardRef<GlobeStageHandle, Props>(
-  ({ sites, theme, mapStyle, showSites, onSelectSite, visible }, ref) => {
+  ({ sites, theme, mapStyle, showSites, onSelectSite, visible, paused = false }, ref) => {
     const globeRef = useRef<GlobeMethods | undefined>(undefined);
     const containerRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState({ width: 800, height: 600 });
     const [countries, setCountries] = useState<any[]>([]);
-    const [countryLabels, setCountryLabels] = useState<{ lat: number; lng: number; text: string }[]>([]);
-    const [altitude, setAltitude] = useState(2.5);
 
     // Per-style behavior: default = clean globe (no borders, no names);
     // satellite/terrain = borders always, names only when zoomed in close
     // enough to read them (they were clipping half-off at far zoom).
     const showBoundaries = mapStyle !== "default";
-    const showLabels = showBoundaries && altitude < 1.1;
 
     // Country boundaries + names (Natural Earth GeoJSON) — loaded once,
     // fails silently if the CDN is unreachable rather than breaking the globe.
@@ -62,23 +62,6 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
             (f: any) => f.properties?.ISO_A2 !== "AQ" && f.properties?.ADMIN !== "Antarctica"
           );
           setCountries(features);
-          const labels: { lat: number; lng: number; text: string; n: number }[] = [];
-          for (const f of features) {
-            const name = f.properties?.ADMIN ?? f.properties?.NAME ?? "";
-            if (!name) continue;
-            // crude centroid: average all coordinates (good enough for labels)
-            let sumLat = 0, sumLng = 0, n = 0;
-            const walk = (coords: any) => {
-              if (typeof coords[0] === "number") {
-                sumLng += coords[0]; sumLat += coords[1]; n++;
-              } else coords.forEach(walk);
-            };
-            walk(f.geometry.coordinates);
-            if (n > 0) labels.push({ lat: sumLat / n, lng: sumLng / n, text: name, n });
-          }
-          // label only the ~70 largest shapes to avoid clutter
-          labels.sort((a, b) => b.n - a.n);
-          setCountryLabels(labels.slice(0, 70).map(({ lat, lng, text }) => ({ lat, lng, text })));
         })
         .catch(() => {});
     }, []);
@@ -134,9 +117,9 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
     useEffect(() => {
       if (!globeRef.current) return;
       const controls = globeRef.current.controls();
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.4;
-    }, []);
+      controls.autoRotate = !paused;
+      controls.autoRotateSpeed = 0.18;
+    }, [paused]);
 
     const texture = TEXTURES[theme][mapStyle];
     const atmo = ATMO[theme];
@@ -173,7 +156,6 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
           onPointClick={(d: any) => onSelectSite(d as Site)}
           atmosphereColor={atmo.color}
           atmosphereAltitude={atmo.alt}
-          onZoom={(pov: any) => setAltitude(pov.altitude)}
           polygonsData={showBoundaries ? countries : []}
           polygonCapColor={() => "rgba(0,0,0,0)"}
           polygonSideColor={() => "rgba(0,0,0,0)"}
@@ -182,14 +164,6 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
           polygonLabel={(d: any) =>
             `<div style="font-family:Inter,sans-serif;font-size:12px;background:#131a24;padding:5px 9px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);color:#e7ecf2">${d.properties?.ADMIN ?? ""}</div>`
           }
-          labelsData={showLabels ? countryLabels : []}
-          labelLat={(d: any) => d.lat}
-          labelLng={(d: any) => d.lng}
-          labelText={(d: any) => d.text}
-          labelSize={0.75}
-          labelDotRadius={0}
-          labelColor={() => (theme === "light" ? "rgba(40,50,65,0.75)" : "rgba(210,225,245,0.65)")}
-          labelResolution={2}
         />
       </div>
     );

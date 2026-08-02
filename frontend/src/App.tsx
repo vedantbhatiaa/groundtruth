@@ -208,6 +208,7 @@ export default function App() {
               showSites={sitesOn}
               onSelectSite={setSelectedSite}
               visible={viewMode === "3d"}
+              paused={!!selectedSite}
             />
             <FlatMap ref={flatHandle} sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} focusedSiteId={selectedSite?.id ?? null} mapStyle={mapStyle} theme={theme} />
 

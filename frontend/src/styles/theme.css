@@ -469,3 +469,32 @@ select, input, textarea{font-family:'Inter',sans-serif;}
 }
 .source-btn.active .source-name{color:var(--teal);}
 .source-detail{font-size:10.5px;color:var(--text-faint);line-height:1.3;}
+
+/* ===== Themed native selects (were rendering as white OS default) ===== */
+select, .rail select, .panel-controls select{
+  background:var(--bg-1);color:var(--text);
+  border:1px solid var(--border-strong);border-radius:8px;
+  padding:8px 30px 8px 11px;font-size:13px;
+  font-family:'Inter',sans-serif;cursor:pointer;
+  -webkit-appearance:none;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--text-dim) 50%),
+                   linear-gradient(135deg,var(--text-dim) 50%,transparent 50%);
+  background-position:calc(100% - 15px) calc(1em + 1px),calc(100% - 10px) calc(1em + 1px);
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+}
+select:hover{border-color:var(--teal);}
+select:focus{outline:none;border-color:var(--teal);}
+/* Dropdown list items are OS-rendered; this is the most that can be themed */
+select option{background:var(--bg-1);color:var(--text);}
+
+/* ===== Company analysis: three numbered sections ===== */
+.section-label{
+  font-family:'Space Grotesk','Inter',sans-serif;
+  font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--text-faint);margin:16px 0 9px;
+  display:flex;align-items:center;gap:9px;
+}
+.section-label::after{content:"";flex:1;height:1px;background:var(--border);}
+.section-label:first-of-type{margin-top:4px;}
+.asset-section{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;}
+@media (max-width:1000px){.asset-section{grid-template-columns:1fr;}}

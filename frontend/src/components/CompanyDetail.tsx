@@ -55,6 +55,32 @@ export default function CompanyDetail({ company, sites, selectedYear, trendWindo
   const chartH = 130;
   const barW = years.length ? (chartW - 40) / years.length - 12 : 0;
 
+  // Insights that go beyond emissions totals — these use the WRI-enriched
+  // fields where present, so they get richer as more sites are matched.
+  const withCapacity = companySites.filter((s) => s.capacity != null);
+  const withGeneration = companySites.filter((s) => s.generation_gwh != null);
+  const totalCapacity = withCapacity.reduce((sum, s) => sum + Number(s.capacity), 0);
+  const totalGeneration = withGeneration.reduce((sum, s) => sum + Number(s.generation_gwh), 0);
+  const fleetIntensity =
+    totalGeneration > 0
+      ? (companySites
+          .filter((s) => s.generation_gwh != null)
+          .reduce((sum, s) => sum + (s.co2 ?? 0), 0) *
+          1_000_000) /
+        (totalGeneration * 1000)
+      : null;
+  const fuelMix = companySites.reduce<Record<string, number>>((acc, s) => {
+    const key = s.primary_fuel ?? s.sector ?? "unknown";
+    acc[key] = (acc[key] ?? 0) + (s.co2 ?? 0);
+    return acc;
+  }, {});
+  const oldestYear = companySites
+    .map((s) => s.commissioning_year)
+    .filter((y): y is number => y != null)
+    .sort((a, b) => a - b)[0];
+  const topSite = [...companySites].sort((a, b) => (b.co2 ?? 0) - (a.co2 ?? 0))[0];
+  const concentration = topSite && companyTotal ? (topSite.co2 / companyTotal) * 100 : null;
+
   const kpis = [
     { label: "Total in view", value: fmtMt(companyTotal) },
     { label: "Share of current view", value: viewTotal ? `${((companyTotal / viewTotal) * 100).toFixed(1)}%` : "—" },
@@ -64,6 +90,10 @@ export default function CompanyDetail({ company, sites, selectedYear, trendWindo
     { label: "Countries", value: String(countries.length) },
     { label: "High-intensity sites", value: `${highShare.toFixed(0)}%` },
     { label: "Avg per site", value: companySites.length ? fmtMt(companyTotal / companySites.length) : "—" },
+    { label: "Fleet capacity", value: totalCapacity ? `${Math.round(totalCapacity).toLocaleString()} MW` : "—" },
+    { label: "Fleet intensity", value: fleetIntensity ? `${fleetIntensity.toFixed(2)} t/MWh` : "—" },
+    { label: "Largest site share", value: concentration ? `${concentration.toFixed(0)}%` : "—" },
+    { label: "Oldest asset", value: oldestYear ? String(oldestYear) : "—" },
   ];
 
   return (
@@ -76,6 +106,7 @@ export default function CompanyDetail({ company, sites, selectedYear, trendWindo
         <span className="analysis-sub">{companySites.length} sites currently in view</span>
       </div>
 
+      <div className="section-label">1 · Overview</div>
       <div className="kpi-row">
         {kpis.map((k) => (
           <div key={k.label} className="kpi-box">
@@ -87,6 +118,7 @@ export default function CompanyDetail({ company, sites, selectedYear, trendWindo
         ))}
       </div>
 
+      <div className="section-label">2 · Trends over time</div>
       <div className="dashboard-grid">
         <div className="company-card">
           <div className="rail-label" style={{ marginBottom: 10 }}>Emissions by year</div>
@@ -257,7 +289,11 @@ export default function CompanyDetail({ company, sites, selectedYear, trendWindo
           </div>
         </div>
 
-        <div className="company-card sites-scroll" style={{ gridColumn: "1 / -1" }}>
+      </div>
+
+      <div className="section-label">3 · Assets</div>
+      <div className="asset-section">
+        <div className="company-card sites-scroll">
           <div className="rail-label" style={{ marginBottom: 10 }}>Sites, with share of company total</div>
           {[...companySites].sort((a, b) => b.co2 - a.co2).map((s) => (
             <div key={s.id} className="emitter-row" onClick={() => onSelectSite(s)}>
@@ -274,6 +310,37 @@ export default function CompanyDetail({ company, sites, selectedYear, trendWindo
               </span>
             </div>
           ))}
+        </div>
+
+        <div className="company-card">
+          <div className="rail-label" style={{ marginBottom: 10 }}>Fuel / sector mix</div>
+          <div className="sector-bars">
+            {Object.entries(fuelMix)
+              .sort(([, a], [, b]) => b - a)
+              .map(([fuel, co2]) => (
+                <div key={fuel} className="sector-bar-row">
+                  <span className="sector-bar-label">{fuel}</span>
+                  <div className="sector-bar-track">
+                    <i style={{ width: `${companyTotal ? (co2 / companyTotal) * 100 : 0}%` }} />
+                  </div>
+                  <span className="sector-bar-value mono">{fmtMt(co2)}</span>
+                </div>
+              ))}
+          </div>
+          {withCapacity.length > 0 && (
+            <div className="mini-kpis" style={{ marginTop: 12 }}>
+              <div>
+                <span className="mini-kpi-label">Sites with capacity data</span>
+                <b>{withCapacity.length} of {companySites.length}</b>
+              </div>
+              {totalGeneration > 0 && (
+                <div>
+                  <span className="mini-kpi-label">Reported generation</span>
+                  <b>{Math.round(totalGeneration).toLocaleString()} GWh</b>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
