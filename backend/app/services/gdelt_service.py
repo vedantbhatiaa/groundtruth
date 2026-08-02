@@ -14,21 +14,27 @@ from app.config import settings
 
 
 async def search_news(query: str, max_records: int = 25) -> list[dict]:
-    # Quote multi-word names so GDELT matches the phrase, not scattered words
-    if " " in query and not query.startswith('"'):
-        query = f'"{query}"'
-    params = {
-        "query": query,
-        "mode": "artlist",
-        "maxrecords": max_records,
-        "format": "json",
-    }
-    async with httpx.AsyncClient(timeout=10) as client:
-        response = await client.get(settings.gdelt_doc_api, params=params)
-        response.raise_for_status()
-        data = response.json()
+    async def _query(q: str) -> list:
+        params = {
+            "query": f"{q} sourcelang:english",
+            "mode": "artlist",
+            "maxrecords": max_records,
+            "format": "json",
+        }
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(settings.gdelt_doc_api, params=params)
+            response.raise_for_status()
+            try:
+                return response.json().get("articles", [])
+            except ValueError:
+                # GDELT returns plain text on rate limits / malformed queries
+                return []
 
-    articles = data.get("articles", [])
+    # Phrase-match multi-word names first; if nothing, retry unquoted
+    quoted = f'"{query}"' if " " in query and not query.startswith('"') else query
+    articles = await _query(quoted)
+    if not articles and quoted != query:
+        articles = await _query(query)
     return [
         {
             "title": a.get("title"),

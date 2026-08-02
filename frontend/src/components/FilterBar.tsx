@@ -5,7 +5,7 @@ const INDUSTRIES = [
   { value: "oil", label: "Oil & gas" },
   { value: "manufacturing", label: "Manufacturing" },
 ];
-const YEARS = ["2024", "2023", "2022", "2021", "2020"];
+const YEARS = ["2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016", "2015"];
 
 interface Props {
   selectedIndustries: string[];

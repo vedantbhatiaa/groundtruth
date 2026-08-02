@@ -4,7 +4,7 @@ import NavDrawer from "./components/NavDrawer";
 import FilterBar from "./components/FilterBar";
 import LeftRail from "./components/LeftRail";
 import GlobeStage, { GlobeStageHandle, MapStyle } from "./components/GlobeStage";
-import FlatMap from "./components/FlatMap";
+import FlatMap, { FlatMapHandle } from "./components/FlatMap";
 import LegendCard from "./components/LegendCard";
 import SummaryCard from "./components/SummaryCard";
 import SiteOverlay from "./components/SiteOverlay";
@@ -47,6 +47,7 @@ export default function App() {
   const [statsSpark, setStatsSpark] = useState<number[] | undefined>(undefined);
 
   const globeHandle = useRef<GlobeStageHandle>(null);
+  const flatHandle = useRef<FlatMapHandle>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -182,7 +183,7 @@ export default function App() {
               onSelectSite={setSelectedSite}
               visible={viewMode === "3d"}
             />
-            <FlatMap sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} />
+            <FlatMap ref={flatHandle} sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} />
 
             <LegendCard active={legendOn} />
             <SummaryCard sites={visibleSites} label={summaryLabel} sparkValues={statsSpark} />
@@ -197,8 +198,8 @@ export default function App() {
               onToggleSites={() => setSitesOn((v) => !v)}
               mapStyle={mapStyle}
               onChangeMapStyle={setMapStyle}
-              onZoomIn={() => globeHandle.current?.zoomIn()}
-              onZoomOut={() => globeHandle.current?.zoomOut()}
+              onZoomIn={() => (viewMode === "3d" ? globeHandle.current?.zoomIn() : flatHandle.current?.zoomIn())}
+              onZoomOut={() => (viewMode === "3d" ? globeHandle.current?.zoomOut() : flatHandle.current?.zoomOut())}
               onDownload={() => globeHandle.current?.downloadImage()}
             />
 

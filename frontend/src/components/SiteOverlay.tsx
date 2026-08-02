@@ -20,10 +20,18 @@ export default function SiteOverlay({ site, sites, onClose }: Props) {
   const [filingsLoading, setFilingsLoading] = useState(false);
   const [siteYears, setSiteYears] = useState<{ year: number; tons: number }[] | null>(null);
 
+  const genericOwner = /independent operator|unknown|various|national$/i.test(site?.company ?? "");
+
   useEffect(() => {
     if (!site) return;
     setLiveNews(null);
     setFilings(null);
+    if (genericOwner) {
+      // "Independent operator" etc. would just query GDELT/EDGAR with noise
+      setNewsLoading(false);
+      setFilingsLoading(false);
+      return;
+    }
     setNewsLoading(true);
     setFilingsLoading(true);
     fetchCompanyNews(site.company).then((r) => {
@@ -76,6 +84,12 @@ export default function SiteOverlay({ site, sites, onClose }: Props) {
       <SparkBars trendDirection={direction as "up" | "down" | ""} values={siteYears?.map((r) => r.tons)} />
 
       <div className="mini-kpis">
+        {site.asset_type ? (
+          <div><span className="mini-kpi-label">Asset type</span><b>{site.asset_type}</b></div>
+        ) : null}
+        {site.capacity ? (
+          <div><span className="mini-kpi-label">Reported capacity</span><b>{site.capacity.toLocaleString()}</b></div>
+        ) : null}
         <div><span className="mini-kpi-label">Rank in view</span><b>#{rank} of {sites.length}</b></div>
         <div><span className="mini-kpi-label">Share of view</span><b>{viewTotal ? ((site.co2 / viewTotal) * 100).toFixed(1) : "0"}%</b></div>
         <div><span className="mini-kpi-label">Share of {site.company.split(" ")[0]}</span><b>{companyTotal ? ((site.co2 / companyTotal) * 100).toFixed(1) : "0"}%</b></div>

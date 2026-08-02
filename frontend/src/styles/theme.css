@@ -416,3 +416,8 @@ select, input, textarea{font-family:'Inter',sans-serif;}
 .kpi-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 13px;}
 .kpi-label{font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em;}
 .kpi-value{font-size:19px;font-weight:700;margin-top:4px;}
+
+/* Nav drawer heading alignment fix */
+.nav-brand{align-items:center;}
+.nav-brand .word{white-space:nowrap;font-size:15px;}
+.nav-brand .tag{margin-top:3px;white-space:nowrap;}

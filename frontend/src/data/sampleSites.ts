@@ -10,6 +10,8 @@ export interface Site {
   trend: string;
   intensity: "high" | "medium" | "low";
   news: string[];
+  capacity?: number | null;
+  asset_type?: string | null;
 }
 
 // Mirrors ingestion/sample_data/sites_sample.csv (2024 rows) — local fallback

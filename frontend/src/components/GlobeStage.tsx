@@ -42,6 +42,39 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
     const globeRef = useRef<GlobeMethods | undefined>(undefined);
     const containerRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState({ width: 800, height: 600 });
+    const [countries, setCountries] = useState<any[]>([]);
+    const [countryLabels, setCountryLabels] = useState<{ lat: number; lng: number; text: string }[]>([]);
+
+    // Country boundaries + names (Natural Earth GeoJSON) — loaded once,
+    // fails silently if the CDN is unreachable rather than breaking the globe.
+    useEffect(() => {
+      fetch("https://globe.gl/example/datasets/ne_110m_admin_0_countries.geojson")
+        .then((r) => r.json())
+        .then((geo) => {
+          const features = (geo.features ?? []).filter(
+            (f: any) => f.properties?.ISO_A2 !== "AQ" && f.properties?.ADMIN !== "Antarctica"
+          );
+          setCountries(features);
+          const labels: { lat: number; lng: number; text: string; n: number }[] = [];
+          for (const f of features) {
+            const name = f.properties?.ADMIN ?? f.properties?.NAME ?? "";
+            if (!name) continue;
+            // crude centroid: average all coordinates (good enough for labels)
+            let sumLat = 0, sumLng = 0, n = 0;
+            const walk = (coords: any) => {
+              if (typeof coords[0] === "number") {
+                sumLng += coords[0]; sumLat += coords[1]; n++;
+              } else coords.forEach(walk);
+            };
+            walk(f.geometry.coordinates);
+            if (n > 0) labels.push({ lat: sumLat / n, lng: sumLng / n, text: name, n });
+          }
+          // label only the ~70 largest shapes to avoid clutter
+          labels.sort((a, b) => b.n - a.n);
+          setCountryLabels(labels.slice(0, 70).map(({ lat, lng, text }) => ({ lat, lng, text })));
+        })
+        .catch(() => {});
+    }, []);
 
     useImperativeHandle(ref, () => ({
       zoomIn: () => {
@@ -133,6 +166,22 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
           onPointClick={(d: any) => onSelectSite(d as Site)}
           atmosphereColor={atmo.color}
           atmosphereAltitude={atmo.alt}
+          polygonsData={countries}
+          polygonCapColor={() => "rgba(0,0,0,0)"}
+          polygonSideColor={() => "rgba(0,0,0,0)"}
+          polygonStrokeColor={() => (theme === "light" ? "rgba(55,65,80,0.55)" : "rgba(190,215,255,0.30)")}
+          polygonAltitude={0.004}
+          polygonLabel={(d: any) =>
+            `<div style="font-family:Inter,sans-serif;font-size:12px;background:#131a24;padding:5px 9px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);color:#e7ecf2">${d.properties?.ADMIN ?? ""}</div>`
+          }
+          labelsData={countryLabels}
+          labelLat={(d: any) => d.lat}
+          labelLng={(d: any) => d.lng}
+          labelText={(d: any) => d.text}
+          labelSize={0.75}
+          labelDotRadius={0}
+          labelColor={() => (theme === "light" ? "rgba(40,50,65,0.75)" : "rgba(210,225,245,0.65)")}
+          labelResolution={2}
         />
       </div>
     );

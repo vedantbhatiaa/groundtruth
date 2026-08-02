@@ -31,8 +31,9 @@ def list_sites(
     OPTIONAL MATCH (s)-[:EMITS]->(b:EmissionRecord {year: $base_year})
     RETURN s.id AS id, s.name AS name, c.name AS company, co.name AS country,
            s.sector AS sector, s.lat AS lat, s.lon AS lng,
-           e.tons AS co2, b.tons AS baseline, s.intensity AS intensity
-    LIMIT 300
+           e.tons AS co2, b.tons AS baseline, s.intensity AS intensity,
+           s.capacity AS capacity, s.asset_type AS asset_type
+    LIMIT 400
     """
     rows = run_read(query, industry=industry, country=country, year=year, base_year=base_year)
     for row in rows:
@@ -90,7 +91,15 @@ def company_timeseries(company: str) -> dict:
         """,
         company=company,
     )
-    return {"years": years, "sectors": sectors}
+    sectors_by_year = run_read(
+        """
+        MATCH (c:Company {name: $company})-[:OWNS]->(s:Site)-[:EMITS]->(e:EmissionRecord)
+        RETURN e.year AS year, s.sector AS sector, round(sum(e.tons) * 10) / 10 AS total
+        ORDER BY year
+        """,
+        company=company,
+    )
+    return {"years": years, "sectors": sectors, "sectors_by_year": sectors_by_year}
 
 
 def stats_timeseries(industry: list[str] | None = None, country: str | None = None) -> list[dict]:

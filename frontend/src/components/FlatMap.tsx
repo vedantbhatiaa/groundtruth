@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Site, intensityColor } from "../data/sampleSites";
 
 interface Props {
@@ -14,9 +14,20 @@ interface DotPosition {
   size: number;
 }
 
-export default function FlatMap({ sites, visible, onSelectSite }: Props) {
+export interface FlatMapHandle {
+  zoomIn: () => void;
+  zoomOut: () => void;
+}
+
+const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dots, setDots] = useState<DotPosition[]>([]);
+  const [scale, setScale] = useState(1);
+
+  useImperativeHandle(ref, () => ({
+    zoomIn: () => setScale((s) => Math.min(4, s * 1.3)),
+    zoomOut: () => setScale((s) => Math.max(1, s / 1.3)),
+  }));
 
   useEffect(() => {
     function project() {
@@ -53,7 +64,8 @@ export default function FlatMap({ sites, visible, onSelectSite }: Props) {
 
   return (
     <div ref={containerRef} className={`flatmap ${visible ? "active" : ""}`}>
-      <img src="https://unpkg.com/three-globe/example/img/earth-day.jpg" alt="" />
+      <div style={{ position: "absolute", inset: 0, transform: `scale(${scale})`, transformOrigin: "center center", transition: "transform .2s ease" }}>
+      <img src="https://unpkg.com/three-globe/example/img/earth-day.jpg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       <div>
         {dots.map(({ site, x, y, size }) => (
           <div
@@ -72,6 +84,9 @@ export default function FlatMap({ sites, visible, onSelectSite }: Props) {
           />
         ))}
       </div>
+      </div>
     </div>
   );
-}
+});
+
+export default FlatMap;

@@ -124,6 +124,7 @@ export async function fetchStatsTimeseries(
 export interface CompanyTimeseries {
   years: YearTotal[];
   sectors: { sector: string; total: number }[];
+  sectors_by_year?: { year: number; sector: string; total: number }[];
 }
 
 export async function fetchCompanyTimeseries(company: string): Promise<CompanyTimeseries | null> {

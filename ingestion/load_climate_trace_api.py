@@ -26,7 +26,7 @@ API_BASES = [
     "https://api.climatetrace.org/v4",
 ]
 
-YEARS = [2020, 2021, 2022, 2023, 2024]
+YEARS = list(range(2015, 2025))  # Climate TRACE coverage varies; missing years just skip
 
 SECTORS = {
     "electricity-generation": ("power", "gas"),
@@ -59,7 +59,9 @@ MERGE (co:Country {iso: $country_iso})
   ON CREATE SET co.name = $country
 MERGE (s:Site {id: $site_id})
   ON CREATE SET s.name = $site_name, s.lat = $lat, s.lon = $lon,
-                s.sector = $sector, s.intensity = $intensity
+                s.sector = $sector, s.intensity = $intensity,
+                s.capacity = $capacity, s.asset_type = $asset_type,
+                s.activity = $activity
 MERGE (c)-[:OWNS]->(s)
 MERGE (s)-[:LOCATED_IN]->(co)
 MERGE (e:EmissionRecord {site_id: $site_id, year: $year, gas: 'co2e'})
@@ -119,7 +121,7 @@ def extract_emissions_for_year(asset, requested_year):
     """
     summary = get_field(asset, "EmissionsSummary", "Emissions", default=None)
     if isinstance(summary, (int, float)):
-        return float(summary)
+        return float(summary), None
     if isinstance(summary, list):
         for entry in summary:
             if not isinstance(entry, dict):
@@ -133,17 +135,18 @@ def extract_emissions_for_year(asset, requested_year):
             qty = get_field(entry, "EmissionsQuantity", "Quantity", "Value", "EmissionsFactor")
             if qty is not None:
                 try:
-                    return float(qty)
+                    activity = get_field(entry, "Activity", "ActivityQuantity")
+                    return float(qty), (float(activity) if activity is not None else None)
                 except (TypeError, ValueError):
                     continue
     if isinstance(summary, dict):
         qty = get_field(summary, "EmissionsQuantity", "Quantity", "Value", str(requested_year))
         if qty is not None:
             try:
-                return float(qty)
+                return float(qty), None
             except (TypeError, ValueError):
                 pass
-    return None
+    return None, None
 
 
 def guess_power_sector(asset, fallback):
@@ -190,7 +193,7 @@ def main(per_sector):
                     lat, lon = extract_coords(asset)
                     if lat is None:
                         continue
-                    tons = extract_emissions_for_year(asset, year)
+                    tons, activity = extract_emissions_for_year(asset, year)
                     if tons is None or tons <= 0:
                         continue
                     name = str(get_field(asset, "Name", default="Unnamed facility"))
@@ -199,15 +202,24 @@ def main(per_sector):
                     sector = guess_power_sector(asset, fallback_sector) if industry == "power" else fallback_sector
                     site_id = f"ct-{asset_id}"
                     if site_id not in sites:
+                        capacity = get_field(asset, "Capacity", "capacity")
+                        try:
+                            capacity = float(capacity) if capacity is not None and not isinstance(capacity, dict) else None
+                        except (TypeError, ValueError):
+                            capacity = None
                         sites[site_id] = {
                             "site_id": site_id, "site_name": name[:80],
                             "company": extract_owner(asset)[:80],
                             "industry": industry, "country_iso": iso,
                             "country": ISO3_NAMES.get(iso, iso),
                             "sector": sector, "lat": lat, "lon": lon,
+                            "asset_type": str(get_field(asset, "AssetType", default="") or "")[:60],
+                            "capacity": capacity, "activity": None,
                             "yearly": {},
                         }
                     sites[site_id]["yearly"][year] = tons
+                    if activity is not None:
+                        sites[site_id]["activity"] = activity
                     parsed_this_year += 1
                 print(f"[{sector_slug} {year}] fetched {len(assets)}, parsed {parsed_this_year}")
 
@@ -233,6 +245,8 @@ def main(per_sector):
                 site_id=r["site_id"], site_name=r["site_name"],
                 lat=r["lat"], lon=r["lon"], sector=r["sector"],
                 intensity=intensity, year=year,
+                capacity=r.get("capacity"), asset_type=r.get("asset_type"),
+                activity=r.get("activity"),
                 tons=round(tons / 1_000_000, 3),
             )
             count += 1

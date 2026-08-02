@@ -114,6 +114,94 @@ export default function CompanyDetail({ company, sites, onBack, onSelectSite }: 
         </div>
 
         <div className="company-card">
+          <div className="rail-label" style={{ marginBottom: 10 }}>Historic trend and projection</div>
+          {years.length >= 2 ? (
+            (() => {
+              const w = 460, h = 170, pad = 24;
+              const lastIdx = years.length - 1;
+              const slope = years[lastIdx].total - years[lastIdx - 1].total;
+              const projected = [1, 2].map((k) => ({
+                year: years[lastIdx].year + k,
+                total: Math.max(0, years[lastIdx].total + slope * k),
+              }));
+              const all = [...years, ...projected];
+              const maxV = Math.max(...all.map((p) => p.total), 0.001);
+              const x = (i: number) => pad + (i / (all.length - 1)) * (w - pad * 2);
+              const y = (v: number) => h - pad - (v / maxV) * (h - pad * 2);
+              const solid = years.map((p, i) => `${i === 0 ? "M" : "L"}${x(i)},${y(p.total)}`).join(" ");
+              const dashed = [years[lastIdx], ...projected]
+                .map((p, i) => `${i === 0 ? "M" : "L"}${x(lastIdx + i)},${y(p.total)}`)
+                .join(" ");
+              return (
+                <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%" }}>
+                  <path d={solid} fill="none" stroke="var(--amber)" strokeWidth={2.5} />
+                  <path d={dashed} fill="none" stroke="var(--amber)" strokeWidth={2} strokeDasharray="5 5" opacity={0.6} />
+                  {years.map((p, i) => (
+                    <circle key={p.year} cx={x(i)} cy={y(p.total)} r={3.2} fill="var(--amber)" />
+                  ))}
+                  {all.map((p, i) => (
+                    <text key={p.year} x={x(i)} y={h - 6} textAnchor="middle"
+                      style={{ fill: i > lastIdx ? "var(--text-faint)" : "var(--text-dim)", fontSize: 10 }}>
+                      {String(p.year).slice(2)}
+                    </text>
+                  ))}
+                  <text x={x(all.length - 1)} y={y(projected[1].total) - 8} textAnchor="end"
+                    style={{ fill: "var(--text-dim)", fontSize: 10.5, fontFamily: "JetBrains Mono, monospace" }}>
+                    proj. {fmtMt(projected[1].total)}
+                  </text>
+                </svg>
+              );
+            })()
+          ) : (
+            <div className="analysis-sub">Need at least two years of records for a trend.</div>
+          )}
+        </div>
+
+        <div className="company-card">
+          <div className="rail-label" style={{ marginBottom: 10 }}>Emissions by sector over time</div>
+          {(() => {
+            const sby = series?.sectors_by_year ?? [];
+            if (sby.length === 0) return <div className="analysis-sub">{loading ? "Loading…" : "No per-sector series."}</div>;
+            const sectorNames = [...new Set(sby.map((r) => r.sector))];
+            const yearNums = [...new Set(sby.map((r) => r.year))].sort((a, b) => a - b);
+            if (yearNums.length < 2) return <div className="analysis-sub">Only one year of records.</div>;
+            const palette = ["var(--teal)", "var(--violet)", "var(--amber)", "var(--red)", "#7fb4ff", "#c9f27f"];
+            const w = 460, h = 170, pad = 24;
+            const maxV = Math.max(...sby.map((r) => r.total), 0.001);
+            const x = (yr: number) => pad + ((yr - yearNums[0]) / (yearNums[yearNums.length - 1] - yearNums[0])) * (w - pad * 2);
+            const y = (v: number) => h - pad - (v / maxV) * (h - pad * 2);
+            return (
+              <>
+                <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%" }}>
+                  {sectorNames.map((sec, si) => {
+                    const pts = yearNums.map((yr) => {
+                      const row = sby.find((r) => r.year === yr && r.sector === sec);
+                      return { yr, v: row ? row.total : 0 };
+                    });
+                    const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${x(p.yr)},${y(p.v)}`).join(" ");
+                    return <path key={sec} d={path} fill="none" stroke={palette[si % palette.length]} strokeWidth={2.2} />;
+                  })}
+                  {yearNums.map((yr) => (
+                    <text key={yr} x={x(yr)} y={h - 6} textAnchor="middle" style={{ fill: "var(--text-dim)", fontSize: 10 }}>
+                      {String(yr).slice(2)}
+                    </text>
+                  ))}
+                </svg>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 6 }}>
+                  {sectorNames.map((sec, si) => (
+                    <span key={sec} style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                      <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: 2,
+                        background: palette[si % palette.length], marginRight: 5 }} />
+                      {sec}
+                    </span>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
+        </div>
+
+        <div className="company-card">
           <div className="rail-label" style={{ marginBottom: 10 }}>Latest-year split by sector</div>
           <div className="sector-bars">
             {sectors.length === 0 && !loading && <div className="analysis-sub">No sector data.</div>}
