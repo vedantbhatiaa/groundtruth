@@ -498,3 +498,13 @@ select option{background:var(--bg-1);color:var(--text);}
 .section-label:first-of-type{margin-top:4px;}
 .asset-section{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;}
 @media (max-width:1000px){.asset-section{grid-template-columns:1fr;}}
+
+/* ===== Two-site comparison ===== */
+.site-overlay.left{left:16px;right:auto;}
+.compare-badge{
+  position:absolute;bottom:70px;left:50%;transform:translateX(-50%);z-index:16;
+  background:var(--panel);border:1px solid var(--teal);border-radius:20px;
+  padding:6px 15px;font-size:11.5px;color:var(--teal);
+  font-family:'Space Grotesk','Inter',sans-serif;letter-spacing:0.03em;
+  backdrop-filter:blur(10px);white-space:nowrap;
+}

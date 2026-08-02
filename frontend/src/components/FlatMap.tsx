@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Site, intensityColor } from "../data/sampleSites";
-import { MapStyle } from "./GlobeStage";
+import { MapStyle, SELECTED_COLOR } from "./GlobeStage";
 import { Theme } from "../hooks/useTheme";
 
 // Same textures as the 3D globe, so switching views keeps one visual language.
@@ -20,7 +20,8 @@ const FLAT_TEXTURES: Record<Theme, Record<MapStyle, string>> = {
 interface Props {
   sites: Site[];
   visible: boolean;
-  onSelectSite: (site: Site) => void;
+  onSelectSite: (site: Site, additive: boolean) => void;
+  selectedIds: string[];
   /** Currently selected site id — the map focuses it, and zooms back out when it clears. */
   focusedSiteId?: string | null;
   mapStyle: MapStyle;
@@ -39,7 +40,7 @@ export interface FlatMapHandle {
   zoomOut: () => void;
 }
 
-const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite, focusedSiteId, mapStyle, theme }, ref) => {
+const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite, selectedIds, focusedSiteId, mapStyle, theme }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dots, setDots] = useState<DotPosition[]>([]);
   const [scale, setScale] = useState(1);
@@ -167,13 +168,14 @@ const FlatMap = forwardRef<FlatMapHandle, Props>(({ sites, visible, onSelectSite
             key={site.id}
             className="flat-dot"
             title={site.name}
-            onClick={() => onSelectSite(site)}
+            onClick={(e) => onSelectSite(site, e.ctrlKey || e.metaKey || e.shiftKey)}
             style={{
               left: x,
               top: y,
               width: size,
               height: size,
-              background: intensityColor[site.intensity],
+              background: selectedIds.includes(site.id) ? SELECTED_COLOR : intensityColor[site.intensity],
+              boxShadow: selectedIds.includes(site.id) ? `0 0 0 3px ${SELECTED_COLOR}55` : undefined,
               color: intensityColor[site.intensity],
             }}
           />

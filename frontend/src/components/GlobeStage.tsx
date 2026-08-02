@@ -17,6 +17,10 @@ const TEXTURES: Record<Theme, Record<MapStyle, string>> = {
     terrain: "https://unpkg.com/three-globe/example/img/earth-topology.png",
   },
 };
+/** Deliberately NOT one of the three intensity colours, so a selected site
+    can never be confused with a high/medium/low marker. */
+export const SELECTED_COLOR = "#ffffff";
+
 const ATMO: Record<Theme, { color: string; alt: number }> = {
   dark: { color: "#2dd9b8", alt: 0.18 },
   light: { color: "#7fb2e0", alt: 0.1 },
@@ -33,7 +37,10 @@ interface Props {
   theme: Theme;
   mapStyle: MapStyle;
   showSites: boolean;
-  onSelectSite: (site: Site) => void;
+  onSelectSite: (site: Site, additive: boolean) => void;
+  /** Ids of selected sites — rendered in the highlight colour so the
+      selection is obvious against the intensity palette. */
+  selectedIds: string[];
   visible: boolean;
   /** True while a site card is open — rotation pauses so the selected
       marker stays put and doesn't drift out of view. */
@@ -41,7 +48,7 @@ interface Props {
 }
 
 const GlobeStage = forwardRef<GlobeStageHandle, Props>(
-  ({ sites, theme, mapStyle, showSites, onSelectSite, visible, paused = false }, ref) => {
+  ({ sites, theme, mapStyle, showSites, onSelectSite, selectedIds, visible, paused = false }, ref) => {
     const globeRef = useRef<GlobeMethods | undefined>(undefined);
     const containerRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState({ width: 800, height: 600 });
@@ -118,7 +125,7 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
       if (!globeRef.current) return;
       const controls = globeRef.current.controls();
       controls.autoRotate = !paused;
-      controls.autoRotateSpeed = 0.18;
+      controls.autoRotateSpeed = 0.4;
     }, [paused]);
 
     const texture = TEXTURES[theme][mapStyle];
@@ -146,14 +153,21 @@ const GlobeStage = forwardRef<GlobeStageHandle, Props>(
           pointsData={points}
           pointLat="lat"
           pointLng="lng"
-          pointColor={(d: any) => intensityColor[(d as Site).intensity]}
-          pointAltitude={(d: any) => 0.02 + 0.28 * Math.sqrt(((d as Site).co2 ?? 0) / maxCo2)}
+          pointColor={(d: any) =>
+            selectedIds.includes((d as Site).id) ? SELECTED_COLOR : intensityColor[(d as Site).intensity]
+          }
+          pointAltitude={(d: any) =>
+            (selectedIds.includes((d as Site).id) ? 0.06 : 0.02) +
+            0.28 * Math.sqrt(((d as Site).co2 ?? 0) / maxCo2)
+          }
           pointRadius={(d: any) => 0.25 + 1.1 * Math.sqrt(((d as Site).co2 ?? 0) / maxCo2)}
           pointLabel={(d: any) => {
             const s = d as Site;
             return `<div style="font-family:Inter,sans-serif;font-size:12px;background:#131a24;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);color:#e7ecf2">${s.name}<br><span style="color:#8b95a5">${s.company}</span></div>`;
           }}
-          onPointClick={(d: any) => onSelectSite(d as Site)}
+          onPointClick={(d: any, event: any) =>
+            onSelectSite(d as Site, !!(event?.ctrlKey || event?.metaKey || event?.shiftKey))
+          }
           atmosphereColor={atmo.color}
           atmosphereAltitude={atmo.alt}
           polygonsData={showBoundaries ? countries : []}

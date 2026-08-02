@@ -14,12 +14,22 @@ router = APIRouter(prefix="/api/ingest", tags=["ingest"])
 
 @router.get("/news")
 async def fetch_news(company: str):
-    return await gdelt_service.search_news(company)
+    # Belt and braces: the service already swallows upstream failures, but
+    # an empty list is always a better response here than a 500.
+    try:
+        return await gdelt_service.search_news(company)
+    except Exception as exc:
+        print(f"[ingest] news failed for {company}: {exc}")
+        return []
 
 
 @router.get("/filings")
 async def fetch_filings(company: str):
-    return await edgar_service.search_filings(company)
+    try:
+        return await edgar_service.search_filings(company)
+    except Exception as exc:
+        print(f"[ingest] filings failed for {company}: {exc}")
+        return []
 
 
 @router.post("/report")

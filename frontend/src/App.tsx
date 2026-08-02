@@ -18,6 +18,7 @@ import CountryPanel from "./components/CountryPanel";
 import { useTheme } from "./hooks/useTheme";
 import { fetchSites, checkHealth, fetchStatsTimeseries } from "./api/client";
 import { Site, sampleSites } from "./data/sampleSites";
+import { fmtMt } from "./utils/format";
 
 const INDUSTRY_LABELS: Record<string, string> = {
   power: "Power & energy",
@@ -40,6 +41,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
+  const [compareSite, setCompareSite] = useState<Site | null>(null);
   const [viewMode, setViewMode] = useState<"3d" | "2d">("3d");
   const [legendOn, setLegendOn] = useState(false);
   const [sitesOn, setSitesOn] = useState(true);
@@ -47,6 +49,24 @@ export default function App() {
   const [backendOnline, setBackendOnline] = useState(false);
   const [statsSpark, setStatsSpark] = useState<number[] | undefined>(undefined);
   const [activeSource, setActiveSource] = useState<DataSource>("all");
+
+  // Ctrl/Cmd/Shift-click adds a second site for side-by-side comparison;
+  // a plain click always resets to a single selection.
+  function handleSelectSite(site: Site, additive = false) {
+    if (additive && selectedSite && site.id !== selectedSite.id) {
+      setCompareSite(site);
+      return;
+    }
+    setSelectedSite(site);
+    setCompareSite(null);
+  }
+
+  function clearSelection() {
+    setSelectedSite(null);
+    setCompareSite(null);
+  }
+
+  const selectedIds = [selectedSite?.id, compareSite?.id].filter(Boolean) as string[];
 
   const globeHandle = useRef<GlobeStageHandle>(null);
   const flatHandle = useRef<FlatMapHandle>(null);
@@ -75,6 +95,7 @@ export default function App() {
       // A previously selected site may not exist under the new filters —
       // clear it instead of showing a stale overlay next to fresh totals.
       setSelectedSite((prev) => (prev && rows.some((r) => r.id === prev.id) ? prev : null));
+      setCompareSite((prev) => (prev && rows.some((r) => r.id === prev.id) ? prev : null));
     });
     fetchStatsTimeseries(ind, ctry).then((rows) => {
       setStatsSpark(rows && rows.length > 0 ? rows.map((r) => r.total) : undefined);
@@ -180,7 +201,7 @@ export default function App() {
           trendWindow={parseInt(trendWindow, 10)}
           onBack={() => setView("analysis")}
           onSelectSite={(s) => {
-            setSelectedSite(s);
+            handleSelectSite(s);
             setView("map");
           }}
         />
@@ -194,7 +215,7 @@ export default function App() {
             onChangeSource={setActiveSource}
             activeSectors={activeSectors}
             onToggleSector={toggleSector}
-            onSelectSite={setSelectedSite}
+            onSelectSite={handleSelectSite}
             country={country}
             onChangeCountry={setCountry}
           />
@@ -206,15 +227,26 @@ export default function App() {
               theme={theme}
               mapStyle={mapStyle}
               showSites={sitesOn}
-              onSelectSite={setSelectedSite}
+              onSelectSite={handleSelectSite}
+              selectedIds={selectedIds}
               visible={viewMode === "3d"}
               paused={!!selectedSite}
             />
-            <FlatMap ref={flatHandle} sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={setSelectedSite} focusedSiteId={selectedSite?.id ?? null} mapStyle={mapStyle} theme={theme} />
+            <FlatMap ref={flatHandle} sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={handleSelectSite} selectedIds={selectedIds} focusedSiteId={selectedSite?.id ?? null} mapStyle={mapStyle} theme={theme} />
 
             <LegendCard active={legendOn} />
-            <SummaryCard sites={visibleSites} label={summaryLabel} sparkValues={statsSpark} />
-            <SiteOverlay site={selectedSite} sites={visibleSites} onClose={() => setSelectedSite(null)} />
+            {activeSource !== "owid" && (
+              <SummaryCard sites={visibleSites} label={summaryLabel} sparkValues={statsSpark} />
+            )}
+            <SiteOverlay site={selectedSite} sites={visibleSites} onClose={clearSelection} />
+            {compareSite && (
+              <SiteOverlay site={compareSite} sites={visibleSites} side="left" onClose={clearSelection} />
+            )}
+            {compareSite && selectedSite && (
+              <div className="compare-badge">
+                Comparing 2 sites · {fmtMt(Math.abs((selectedSite.co2 ?? 0) - (compareSite.co2 ?? 0)))} apart
+              </div>
+            )}
             {country !== "All countries" && !selectedSite && (
               <CountryPanel country={country} onClose={() => setCountry("All countries")} />
             )}
@@ -252,7 +284,7 @@ export default function App() {
             onClose={() => setChatOpen(false)}
             sites={visibleSites}
             activeSiteId={selectedSite?.id}
-            onSelectSite={setSelectedSite}
+            onSelectSite={handleSelectSite}
           />
         </div>
       )}
