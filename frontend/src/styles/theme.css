@@ -835,3 +835,13 @@ select option{background:var(--bg-1);color:var(--text);}
 .rail-note{
   font-size:10.5px;color:var(--text-faint);line-height:1.5;margin-top:7px;
 }
+
+/* Info pages: readable prose blocks */
+.info-page p{margin-bottom:13px;}
+.info-page ul{margin:0 0 13px 18px;font-size:14px;line-height:1.75;color:var(--text-dim);}
+.info-page li{margin-bottom:6px;}
+.info-page code{
+  background:var(--bg-1);border:1px solid var(--border);border-radius:4px;
+  padding:1px 5px;font-family:'JetBrains Mono',monospace;font-size:12.5px;
+}
+.info-page a{color:var(--teal);}
