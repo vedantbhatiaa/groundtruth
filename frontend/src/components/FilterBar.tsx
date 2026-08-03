@@ -1,3 +1,4 @@
+import { DATA_MIN_YEAR, DATA_MAX_YEAR } from "../constants";
 import { useState } from "react";
 
 const INDUSTRIES = [
@@ -5,10 +6,10 @@ const INDUSTRIES = [
   { value: "oil", label: "Oil & gas" },
   { value: "manufacturing", label: "Manufacturing" },
 ];
-const YEARS = [
-  "2024", "2023", "2022", "2021", "2020", "2019", "2018",
-  "2017", "2016", "2015", "2014", "2013", "2012", "2011", "2010",
-];
+const YEARS = Array.from(
+  { length: DATA_MAX_YEAR - DATA_MIN_YEAR + 1 },
+  (_, i) => String(DATA_MAX_YEAR - i)
+);
 
 interface Props {
   selectedIndustries: string[];

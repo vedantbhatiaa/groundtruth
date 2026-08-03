@@ -17,7 +17,8 @@ import InfoPage from "./components/InfoPage";
 import CountryPanel from "./components/CountryPanel";
 import { useTheme } from "./hooks/useTheme";
 import { fetchSites, checkHealth, fetchStatsTimeseries, fetchAvailableSectors } from "./api/client";
-import { Site, sampleSites } from "./data/sampleSites";
+import { Site } from "./data/sampleSites";
+import { SOURCE_META, DATA_MAX_YEAR } from "./constants";
 import { fmtMt } from "./utils/format";
 
 const INDUSTRY_LABELS: Record<string, string> = {
@@ -32,16 +33,9 @@ export default function App() {
   const [chatOpen, setChatOpen] = useState(false);
   const [view, setView] = useState("map");
 
-  const [sites, setSites] = useState<Site[]>(sampleSites);
+  const [sites, setSites] = useState<Site[]>([]);
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>(["power"]);
   const [selectedYear, setSelectedYear] = useState("2024");
-  // Each source covers a different span. Selecting a year outside a source's
-  // range returns nothing — which looked like "the data didn't load" when it
-  // was really just 2024 against EPA data that stops at 2023.
-  const SOURCE_YEARS: Record<string, { min: number; max: number; label: string }> = {
-    climate_trace: { min: 2021, max: 2024, label: "Climate TRACE" },
-    epa: { min: 2010, max: 2023, label: "EPA GHGRP" },
-  };
   const [trendWindow, setTrendWindow] = useState<"5" | "10">("5");
   const [activeSectors, setActiveSectors] = useState<string[]>([]);
   const [country, setCountry] = useState("All countries");
@@ -117,11 +111,12 @@ export default function App() {
 
   // Snap the selected year into the active source's coverage.
   useEffect(() => {
-    const range = SOURCE_YEARS[activeSource];
+    const range = SOURCE_META[activeSource];
     if (!range) return;
     const y = parseInt(selectedYear, 10);
-    if (y > range.max) setSelectedYear(String(range.max));
-    else if (y < range.min) setSelectedYear(String(range.min));
+    if (!range?.minYear || !range?.maxYear) return;
+    if (y > range.maxYear) setSelectedYear(String(range.maxYear));
+    else if (y < range.minYear) setSelectedYear(String(range.minYear));
   }, [activeSource]);
 
   const globeHandle = useRef<GlobeStageHandle>(null);
@@ -298,9 +293,7 @@ export default function App() {
             <FlatMap ref={flatHandle} sites={sitesOn ? visibleSites : []} visible={viewMode === "2d"} onSelectSite={handleSelectSite} selectedIds={selectedIds} focusedSiteId={selectedSite?.id ?? null} mapStyle={mapStyle} theme={theme} />
 
             <LegendCard active={legendOn} />
-            {activeSource !== "owid" && (
-              <SummaryCard sites={visibleSites} label={summaryLabel} sparkValues={statsSpark} />
-            )}
+            <SummaryCard sites={visibleSites} label={summaryLabel} sparkValues={statsSpark} />
             <SiteOverlay
               site={selectedSite}
               sites={visibleSites}

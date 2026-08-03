@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchCountryTimeseries, CountryStat } from "../api/client";
 import { fmtMt } from "../utils/format";
+import { DATA_MAX_YEAR } from "../constants";
 import { YAxis, HoverLayer } from "./ChartFrame";
 
 interface Props {
@@ -34,7 +35,7 @@ export default function CountryPanel({ country, onClose }: Props) {
 
   useEffect(() => {
     setLoading(true);
-    fetchCountryTimeseries(country, fromYear, 2024).then((r) => {
+    fetchCountryTimeseries(country, fromYear, DATA_MAX_YEAR).then((r) => {
       setStats(r);
       setLoading(false);
     });

@@ -1,4 +1,7 @@
 import { Site, intensityColor } from "../data/sampleSites";
+import { DATA_SOURCES, DataSource, sourceRangeLabel } from "../constants";
+
+export type { DataSource };
 import { fmtMt } from "../utils/format";
 
 const SECTORS = [
@@ -31,14 +34,7 @@ const COUNTRIES = [
   "Nigeria", "Egypt", "Norway", "Canada",
 ];
 
-export type DataSource = "all" | "climate_trace" | "epa" | "wri" | "owid";
 
-export const DATA_SOURCES: { value: DataSource; label: string; detail: string }[] = [
-  { value: "all", label: "All sources", detail: "Everything currently loaded" },
-  { value: "climate_trace", label: "Climate TRACE", detail: "Modelled site emissions, 2021-2024" },
-  { value: "epa", label: "EPA GHGRP", detail: "Reported US facilities, 2010-2023" },
-  { value: "wri", label: "WRI Power Plants", detail: "Capacity, generation, intensity" },
-];
 
 interface Props {
   sites: Site[];
@@ -138,7 +134,10 @@ export default function LeftRail({
               onClick={() => onChangeSource(s.value)}
             >
               <span className="source-name">{s.label}</span>
-              <span className="source-detail">{s.detail}</span>
+              <span className="source-detail">
+                {s.detail}
+                {sourceRangeLabel(s.value) && ` \u00b7 ${sourceRangeLabel(s.value)}`}
+              </span>
             </button>
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { sampleSites, Site } from "../data/sampleSites";
+import { Site } from "../data/sampleSites";
 
 const BASE = "/api";
 
@@ -36,8 +36,11 @@ export async function fetchSites(
     }
     return await res.json();
   } catch (err) {
-    console.error("[Groundtruth] /api/sites FAILED — falling back to fictional sample data. Reason:", err);
-    return sampleSites;
+    // Returning [] rather than fictional sample data: showing invented
+    // companies that look real is worse than showing nothing, and the
+    // header's Offline badge already explains the empty state.
+    console.error("[Groundtruth] /api/sites FAILED — backend unreachable. Reason:", err);
+    return [];
   }
 }
 
