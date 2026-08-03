@@ -1,0 +1,181 @@
+site_id,site_name,company,industry,hq_country,country,country_iso,sector,lat,lon,year,gas,tons_millions,intensity
+site-001,Riverside power station,Northgate Energy,power,United States,United States,USA,coal,38.9,-90.2,2020,co2e,3.4,high
+site-001,Riverside power station,Northgate Energy,power,United States,United States,USA,coal,38.9,-90.2,2021,co2e,3.59,high
+site-001,Riverside power station,Northgate Energy,power,United States,United States,USA,coal,38.9,-90.2,2022,co2e,3.79,high
+site-001,Riverside power station,Northgate Energy,power,United States,United States,USA,coal,38.9,-90.2,2023,co2e,4.03,high
+site-001,Riverside power station,Northgate Energy,power,United States,United States,USA,coal,38.9,-90.2,2024,co2e,4.2,high
+site-002,Meridian gas plant,Northgate Energy,power,United States,United States,USA,gas,29.8,-95.4,2020,co2e,2.02,medium
+site-002,Meridian gas plant,Northgate Energy,power,United States,United States,USA,gas,29.8,-95.4,2021,co2e,2.05,medium
+site-002,Meridian gas plant,Northgate Energy,power,United States,United States,USA,gas,29.8,-95.4,2022,co2e,2.09,medium
+site-002,Meridian gas plant,Northgate Energy,power,United States,United States,USA,gas,29.8,-95.4,2023,co2e,2.09,medium
+site-002,Meridian gas plant,Northgate Energy,power,United States,United States,USA,gas,29.8,-95.4,2024,co2e,2.1,medium
+site-003,Sable Point terminal,Northgate Energy,oil,United States,United States,USA,upstream,29.3,-94.8,2020,co2e,2.74,high
+site-003,Sable Point terminal,Northgate Energy,oil,United States,United States,USA,upstream,29.3,-94.8,2021,co2e,2.89,high
+site-003,Sable Point terminal,Northgate Energy,oil,United States,United States,USA,upstream,29.3,-94.8,2022,co2e,3.07,high
+site-003,Sable Point terminal,Northgate Energy,oil,United States,United States,USA,upstream,29.3,-94.8,2023,co2e,3.22,high
+site-003,Sable Point terminal,Northgate Energy,oil,United States,United States,USA,upstream,29.3,-94.8,2024,co2e,3.4,high
+site-004,Rheinland works,Vestara Industries,power,Germany,Germany,DEU,coal,51.2,6.8,2020,co2e,3.01,high
+site-004,Rheinland works,Vestara Industries,power,Germany,Germany,DEU,coal,51.2,6.8,2021,co2e,3.12,high
+site-004,Rheinland works,Vestara Industries,power,Germany,Germany,DEU,coal,51.2,6.8,2022,co2e,3.26,high
+site-004,Rheinland works,Vestara Industries,power,Germany,Germany,DEU,coal,51.2,6.8,2023,co2e,3.44,high
+site-004,Rheinland works,Vestara Industries,power,Germany,Germany,DEU,coal,51.2,6.8,2024,co2e,3.6,high
+site-005,Solkraft solar farm,Vestara Industries,power,Germany,Germany,DEU,solar,52.5,13.4,2020,co2e,0.23,low
+site-005,Solkraft solar farm,Vestara Industries,power,Germany,Germany,DEU,solar,52.5,13.4,2021,co2e,0.22,low
+site-005,Solkraft solar farm,Vestara Industries,power,Germany,Germany,DEU,solar,52.5,13.4,2022,co2e,0.22,low
+site-005,Solkraft solar farm,Vestara Industries,power,Germany,Germany,DEU,solar,52.5,13.4,2023,co2e,0.21,low
+site-005,Solkraft solar farm,Vestara Industries,power,Germany,Germany,DEU,solar,52.5,13.4,2024,co2e,0.2,low
+site-006,Nordsee gas hub,Vestara Industries,oil,Germany,Germany,DEU,gas,54.3,8.1,2020,co2e,1.79,medium
+site-006,Nordsee gas hub,Vestara Industries,oil,Germany,Germany,DEU,gas,54.3,8.1,2021,co2e,1.79,medium
+site-006,Nordsee gas hub,Vestara Industries,oil,Germany,Germany,DEU,gas,54.3,8.1,2022,co2e,1.83,medium
+site-006,Nordsee gas hub,Vestara Industries,oil,Germany,Germany,DEU,gas,54.3,8.1,2023,co2e,1.87,medium
+site-006,Nordsee gas hub,Vestara Industries,oil,Germany,Germany,DEU,gas,54.3,8.1,2024,co2e,1.9,medium
+site-007,Deccan thermal plant,Bharat Power Corp,power,India,India,IND,coal,19.1,72.9,2020,co2e,4.38,high
+site-007,Deccan thermal plant,Bharat Power Corp,power,India,India,IND,coal,19.1,72.9,2021,co2e,4.52,high
+site-007,Deccan thermal plant,Bharat Power Corp,power,India,India,IND,coal,19.1,72.9,2022,co2e,4.73,high
+site-007,Deccan thermal plant,Bharat Power Corp,power,India,India,IND,coal,19.1,72.9,2023,co2e,4.92,high
+site-007,Deccan thermal plant,Bharat Power Corp,power,India,India,IND,coal,19.1,72.9,2024,co2e,5.1,high
+site-008,Ganga basin field,Bharat Power Corp,oil,India,India,IND,upstream,25.3,83.0,2020,co2e,1.77,medium
+site-008,Ganga basin field,Bharat Power Corp,oil,India,India,IND,upstream,25.3,83.0,2021,co2e,1.77,medium
+site-008,Ganga basin field,Bharat Power Corp,oil,India,India,IND,upstream,25.3,83.0,2022,co2e,1.78,medium
+site-008,Ganga basin field,Bharat Power Corp,oil,India,India,IND,upstream,25.3,83.0,2023,co2e,1.78,medium
+site-008,Ganga basin field,Bharat Power Corp,oil,India,India,IND,upstream,25.3,83.0,2024,co2e,1.8,medium
+site-009,Coromandel wind park,Bharat Power Corp,power,India,India,IND,solar,13.1,80.3,2020,co2e,0.33,low
+site-009,Coromandel wind park,Bharat Power Corp,power,India,India,IND,solar,13.1,80.3,2021,co2e,0.32,low
+site-009,Coromandel wind park,Bharat Power Corp,power,India,India,IND,solar,13.1,80.3,2022,co2e,0.32,low
+site-009,Coromandel wind park,Bharat Power Corp,power,India,India,IND,solar,13.1,80.3,2023,co2e,0.31,low
+site-009,Coromandel wind park,Bharat Power Corp,power,India,India,IND,solar,13.1,80.3,2024,co2e,0.3,low
+site-010,Rub al Khali field,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,upstream,21.5,51.2,2020,co2e,5.2,high
+site-010,Rub al Khali field,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,upstream,21.5,51.2,2021,co2e,5.42,high
+site-010,Rub al Khali field,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,upstream,21.5,51.2,2022,co2e,5.72,high
+site-010,Rub al Khali field,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,upstream,21.5,51.2,2023,co2e,6.06,high
+site-010,Rub al Khali field,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,upstream,21.5,51.2,2024,co2e,6.4,high
+site-011,Jeddah gas terminal,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,gas,21.5,39.2,2020,co2e,2.77,medium
+site-011,Jeddah gas terminal,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,gas,21.5,39.2,2021,co2e,2.76,medium
+site-011,Jeddah gas terminal,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,gas,21.5,39.2,2022,co2e,2.81,medium
+site-011,Jeddah gas terminal,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,gas,21.5,39.2,2023,co2e,2.86,medium
+site-011,Jeddah gas terminal,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,gas,21.5,39.2,2024,co2e,2.9,medium
+site-012,Dammam refinery,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,upstream,26.4,50.1,2020,co2e,4.69,high
+site-012,Dammam refinery,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,upstream,26.4,50.1,2021,co2e,4.97,high
+site-012,Dammam refinery,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,upstream,26.4,50.1,2022,co2e,5.16,high
+site-012,Dammam refinery,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,upstream,26.4,50.1,2023,co2e,5.46,high
+site-012,Dammam refinery,Al Bariq Energy,oil,Saudi Arabia,Saudi Arabia,SAU,upstream,26.4,50.1,2024,co2e,5.7,high
+site-013,Sertao gas field,Costa Verde Energia,oil,Brazil,Brazil,BRA,gas,-9.4,-40.5,2020,co2e,2.37,medium
+site-013,Sertao gas field,Costa Verde Energia,oil,Brazil,Brazil,BRA,gas,-9.4,-40.5,2021,co2e,2.38,medium
+site-013,Sertao gas field,Costa Verde Energia,oil,Brazil,Brazil,BRA,gas,-9.4,-40.5,2022,co2e,2.4,medium
+site-013,Sertao gas field,Costa Verde Energia,oil,Brazil,Brazil,BRA,gas,-9.4,-40.5,2023,co2e,2.41,medium
+site-013,Sertao gas field,Costa Verde Energia,oil,Brazil,Brazil,BRA,gas,-9.4,-40.5,2024,co2e,2.4,medium
+site-014,Bahia thermal plant,Costa Verde Energia,power,Brazil,Brazil,BRA,coal,-12.9,-38.5,2020,co2e,2.92,medium
+site-014,Bahia thermal plant,Costa Verde Energia,power,Brazil,Brazil,BRA,coal,-12.9,-38.5,2021,co2e,2.97,medium
+site-014,Bahia thermal plant,Costa Verde Energia,power,Brazil,Brazil,BRA,coal,-12.9,-38.5,2022,co2e,3.04,medium
+site-014,Bahia thermal plant,Costa Verde Energia,power,Brazil,Brazil,BRA,coal,-12.9,-38.5,2023,co2e,3.09,medium
+site-014,Bahia thermal plant,Costa Verde Energia,power,Brazil,Brazil,BRA,coal,-12.9,-38.5,2024,co2e,3.1,medium
+site-015,Amazonas hydro station,Costa Verde Energia,power,Brazil,Brazil,BRA,solar,-3.1,-60.0,2020,co2e,0.11,low
+site-015,Amazonas hydro station,Costa Verde Energia,power,Brazil,Brazil,BRA,solar,-3.1,-60.0,2021,co2e,0.11,low
+site-015,Amazonas hydro station,Costa Verde Energia,power,Brazil,Brazil,BRA,solar,-3.1,-60.0,2022,co2e,0.11,low
+site-015,Amazonas hydro station,Costa Verde Energia,power,Brazil,Brazil,BRA,solar,-3.1,-60.0,2023,co2e,0.1,low
+site-015,Amazonas hydro station,Costa Verde Energia,power,Brazil,Brazil,BRA,solar,-3.1,-60.0,2024,co2e,0.1,low
+site-016,Ordos coal complex,Huabei Power,power,China,China,CHN,coal,39.6,109.8,2020,co2e,6.49,high
+site-016,Ordos coal complex,Huabei Power,power,China,China,CHN,coal,39.6,109.8,2021,co2e,6.85,high
+site-016,Ordos coal complex,Huabei Power,power,China,China,CHN,coal,39.6,109.8,2022,co2e,7.18,high
+site-016,Ordos coal complex,Huabei Power,power,China,China,CHN,coal,39.6,109.8,2023,co2e,7.42,high
+site-016,Ordos coal complex,Huabei Power,power,China,China,CHN,coal,39.6,109.8,2024,co2e,7.8,high
+site-017,Bohai gas platform,Huabei Power,oil,China,China,CHN,upstream,38.0,119.5,2020,co2e,3.86,high
+site-017,Bohai gas platform,Huabei Power,oil,China,China,CHN,upstream,38.0,119.5,2021,co2e,3.99,high
+site-017,Bohai gas platform,Huabei Power,oil,China,China,CHN,upstream,38.0,119.5,2022,co2e,4.17,high
+site-017,Bohai gas platform,Huabei Power,oil,China,China,CHN,upstream,38.0,119.5,2023,co2e,4.4,high
+site-017,Bohai gas platform,Huabei Power,oil,China,China,CHN,upstream,38.0,119.5,2024,co2e,4.6,high
+site-018,Gobi solar array,Huabei Power,power,China,China,CHN,solar,40.2,105.0,2020,co2e,0.45,low
+site-018,Gobi solar array,Huabei Power,power,China,China,CHN,solar,40.2,105.0,2021,co2e,0.44,low
+site-018,Gobi solar array,Huabei Power,power,China,China,CHN,solar,40.2,105.0,2022,co2e,0.43,low
+site-018,Gobi solar array,Huabei Power,power,China,China,CHN,solar,40.2,105.0,2023,co2e,0.41,low
+site-018,Gobi solar array,Huabei Power,power,China,China,CHN,solar,40.2,105.0,2024,co2e,0.4,low
+site-019,Teesside works,Albion Energy,power,United Kingdom,United Kingdom,GBR,gas,54.6,-1.2,2020,co2e,2.11,medium
+site-019,Teesside works,Albion Energy,power,United Kingdom,United Kingdom,GBR,gas,54.6,-1.2,2021,co2e,2.14,medium
+site-019,Teesside works,Albion Energy,power,United Kingdom,United Kingdom,GBR,gas,54.6,-1.2,2022,co2e,2.14,medium
+site-019,Teesside works,Albion Energy,power,United Kingdom,United Kingdom,GBR,gas,54.6,-1.2,2023,co2e,2.15,medium
+site-019,Teesside works,Albion Energy,power,United Kingdom,United Kingdom,GBR,gas,54.6,-1.2,2024,co2e,2.2,medium
+site-020,North Sea platform,Albion Energy,oil,United Kingdom,United Kingdom,GBR,upstream,58.4,1.5,2020,co2e,3.33,high
+site-020,North Sea platform,Albion Energy,oil,United Kingdom,United Kingdom,GBR,upstream,58.4,1.5,2021,co2e,3.44,high
+site-020,North Sea platform,Albion Energy,oil,United Kingdom,United Kingdom,GBR,upstream,58.4,1.5,2022,co2e,3.6,high
+site-020,North Sea platform,Albion Energy,oil,United Kingdom,United Kingdom,GBR,upstream,58.4,1.5,2023,co2e,3.71,high
+site-020,North Sea platform,Albion Energy,oil,United Kingdom,United Kingdom,GBR,upstream,58.4,1.5,2024,co2e,3.9,high
+site-021,Karoo gas field,Meridian Africa,oil,South Africa,South Africa,ZAF,gas,-32.3,22.1,2020,co2e,2.49,medium
+site-021,Karoo gas field,Meridian Africa,oil,South Africa,South Africa,ZAF,gas,-32.3,22.1,2021,co2e,2.52,medium
+site-021,Karoo gas field,Meridian Africa,oil,South Africa,South Africa,ZAF,gas,-32.3,22.1,2022,co2e,2.53,medium
+site-021,Karoo gas field,Meridian Africa,oil,South Africa,South Africa,ZAF,gas,-32.3,22.1,2023,co2e,2.54,medium
+site-021,Karoo gas field,Meridian Africa,oil,South Africa,South Africa,ZAF,gas,-32.3,22.1,2024,co2e,2.6,medium
+site-022,Mpumalanga power station,Meridian Africa,power,South Africa,South Africa,ZAF,coal,-25.9,29.2,2020,co2e,5.02,high
+site-022,Mpumalanga power station,Meridian Africa,power,South Africa,South Africa,ZAF,coal,-25.9,29.2,2021,co2e,5.26,high
+site-022,Mpumalanga power station,Meridian Africa,power,South Africa,South Africa,ZAF,coal,-25.9,29.2,2022,co2e,5.52,high
+site-022,Mpumalanga power station,Meridian Africa,power,South Africa,South Africa,ZAF,coal,-25.9,29.2,2023,co2e,5.85,high
+site-022,Mpumalanga power station,Meridian Africa,power,South Africa,South Africa,ZAF,coal,-25.9,29.2,2024,co2e,6.1,high
+site-023,Pilbara gas hub,Outback Resources,oil,Australia,Australia,AUS,upstream,-20.7,116.8,2020,co2e,3.15,medium
+site-023,Pilbara gas hub,Outback Resources,oil,Australia,Australia,AUS,upstream,-20.7,116.8,2021,co2e,3.22,medium
+site-023,Pilbara gas hub,Outback Resources,oil,Australia,Australia,AUS,upstream,-20.7,116.8,2022,co2e,3.25,medium
+site-023,Pilbara gas hub,Outback Resources,oil,Australia,Australia,AUS,upstream,-20.7,116.8,2023,co2e,3.3,medium
+site-023,Pilbara gas hub,Outback Resources,oil,Australia,Australia,AUS,upstream,-20.7,116.8,2024,co2e,3.3,medium
+site-024,Hunter Valley plant,Outback Resources,power,Australia,Australia,AUS,coal,-32.6,151.0,2020,co2e,4.04,high
+site-024,Hunter Valley plant,Outback Resources,power,Australia,Australia,AUS,coal,-32.6,151.0,2021,co2e,4.22,high
+site-024,Hunter Valley plant,Outback Resources,power,Australia,Australia,AUS,coal,-32.6,151.0,2022,co2e,4.4,high
+site-024,Hunter Valley plant,Outback Resources,power,Australia,Australia,AUS,coal,-32.6,151.0,2023,co2e,4.64,high
+site-024,Hunter Valley plant,Outback Resources,power,Australia,Australia,AUS,coal,-32.6,151.0,2024,co2e,4.8,high
+site-025,Niger delta field,Sahel Energy,oil,Nigeria,Nigeria,NGA,upstream,4.8,6.3,2020,co2e,4.58,high
+site-025,Niger delta field,Sahel Energy,oil,Nigeria,Nigeria,NGA,upstream,4.8,6.3,2021,co2e,4.79,high
+site-025,Niger delta field,Sahel Energy,oil,Nigeria,Nigeria,NGA,upstream,4.8,6.3,2022,co2e,4.97,high
+site-025,Niger delta field,Sahel Energy,oil,Nigeria,Nigeria,NGA,upstream,4.8,6.3,2023,co2e,5.2,high
+site-025,Niger delta field,Sahel Energy,oil,Nigeria,Nigeria,NGA,upstream,4.8,6.3,2024,co2e,5.4,high
+site-026,Lagos gas terminal,Sahel Energy,oil,Nigeria,Nigeria,NGA,gas,6.5,3.4,2020,co2e,1.93,medium
+site-026,Lagos gas terminal,Sahel Energy,oil,Nigeria,Nigeria,NGA,gas,6.5,3.4,2021,co2e,1.93,medium
+site-026,Lagos gas terminal,Sahel Energy,oil,Nigeria,Nigeria,NGA,gas,6.5,3.4,2022,co2e,1.92,medium
+site-026,Lagos gas terminal,Sahel Energy,oil,Nigeria,Nigeria,NGA,gas,6.5,3.4,2023,co2e,1.97,medium
+site-026,Lagos gas terminal,Sahel Energy,oil,Nigeria,Nigeria,NGA,gas,6.5,3.4,2024,co2e,2.0,medium
+site-027,Ruhr steelworks,Ferrum Group,manufacturing,Germany,Germany,DEU,steel,51.5,7.1,2020,co2e,4.1,high
+site-027,Ruhr steelworks,Ferrum Group,manufacturing,Germany,Germany,DEU,steel,51.5,7.1,2021,co2e,4.23,high
+site-027,Ruhr steelworks,Ferrum Group,manufacturing,Germany,Germany,DEU,steel,51.5,7.1,2022,co2e,4.38,high
+site-027,Ruhr steelworks,Ferrum Group,manufacturing,Germany,Germany,DEU,steel,51.5,7.1,2023,co2e,4.65,high
+site-027,Ruhr steelworks,Ferrum Group,manufacturing,Germany,Germany,DEU,steel,51.5,7.1,2024,co2e,4.9,high
+site-028,Jamshedpur steel plant,Ferrum Group,manufacturing,Germany,India,IND,steel,22.8,86.2,2020,co2e,4.67,high
+site-028,Jamshedpur steel plant,Ferrum Group,manufacturing,Germany,India,IND,steel,22.8,86.2,2021,co2e,4.85,high
+site-028,Jamshedpur steel plant,Ferrum Group,manufacturing,Germany,India,IND,steel,22.8,86.2,2022,co2e,5.04,high
+site-028,Jamshedpur steel plant,Ferrum Group,manufacturing,Germany,India,IND,steel,22.8,86.2,2023,co2e,5.35,high
+site-028,Jamshedpur steel plant,Ferrum Group,manufacturing,Germany,India,IND,steel,22.8,86.2,2024,co2e,5.6,high
+site-029,Gary works,Ferrum Group,manufacturing,Germany,United States,USA,steel,41.6,-87.3,2020,co2e,3.18,high
+site-029,Gary works,Ferrum Group,manufacturing,Germany,United States,USA,steel,41.6,-87.3,2021,co2e,3.29,high
+site-029,Gary works,Ferrum Group,manufacturing,Germany,United States,USA,steel,41.6,-87.3,2022,co2e,3.47,high
+site-029,Gary works,Ferrum Group,manufacturing,Germany,United States,USA,steel,41.6,-87.3,2023,co2e,3.63,high
+site-029,Gary works,Ferrum Group,manufacturing,Germany,United States,USA,steel,41.6,-87.3,2024,co2e,3.8,high
+site-030,Nile cement complex,Atlas Cement,manufacturing,Egypt,Egypt,EGY,cement,30.0,31.2,2020,co2e,3.04,medium
+site-030,Nile cement complex,Atlas Cement,manufacturing,Egypt,Egypt,EGY,cement,30.0,31.2,2021,co2e,3.1,medium
+site-030,Nile cement complex,Atlas Cement,manufacturing,Egypt,Egypt,EGY,cement,30.0,31.2,2022,co2e,3.11,medium
+site-030,Nile cement complex,Atlas Cement,manufacturing,Egypt,Egypt,EGY,cement,30.0,31.2,2023,co2e,3.14,medium
+site-030,Nile cement complex,Atlas Cement,manufacturing,Egypt,Egypt,EGY,cement,30.0,31.2,2024,co2e,3.2,medium
+site-031,Texas cement kiln,Atlas Cement,manufacturing,Egypt,United States,USA,cement,32.8,-96.8,2020,co2e,2.64,medium
+site-031,Texas cement kiln,Atlas Cement,manufacturing,Egypt,United States,USA,cement,32.8,-96.8,2021,co2e,2.67,medium
+site-031,Texas cement kiln,Atlas Cement,manufacturing,Egypt,United States,USA,cement,32.8,-96.8,2022,co2e,2.7,medium
+site-031,Texas cement kiln,Atlas Cement,manufacturing,Egypt,United States,USA,cement,32.8,-96.8,2023,co2e,2.71,medium
+site-031,Texas cement kiln,Atlas Cement,manufacturing,Egypt,United States,USA,cement,32.8,-96.8,2024,co2e,2.7,medium
+site-032,Rajasthan cement works,Atlas Cement,manufacturing,Egypt,India,IND,cement,26.9,75.8,2020,co2e,2.85,high
+site-032,Rajasthan cement works,Atlas Cement,manufacturing,Egypt,India,IND,cement,26.9,75.8,2021,co2e,3.02,high
+site-032,Rajasthan cement works,Atlas Cement,manufacturing,Egypt,India,IND,cement,26.9,75.8,2022,co2e,3.15,high
+site-032,Rajasthan cement works,Atlas Cement,manufacturing,Egypt,India,IND,cement,26.9,75.8,2023,co2e,3.31,high
+site-032,Rajasthan cement works,Atlas Cement,manufacturing,Egypt,India,IND,cement,26.9,75.8,2024,co2e,3.5,high
+site-033,Fjord aluminium smelter,Nordlys Metals,manufacturing,Norway,Norway,NOR,aluminum,60.4,5.3,2020,co2e,1.34,low
+site-033,Fjord aluminium smelter,Nordlys Metals,manufacturing,Norway,Norway,NOR,aluminum,60.4,5.3,2021,co2e,1.29,low
+site-033,Fjord aluminium smelter,Nordlys Metals,manufacturing,Norway,Norway,NOR,aluminum,60.4,5.3,2022,co2e,1.26,low
+site-033,Fjord aluminium smelter,Nordlys Metals,manufacturing,Norway,Norway,NOR,aluminum,60.4,5.3,2023,co2e,1.22,low
+site-033,Fjord aluminium smelter,Nordlys Metals,manufacturing,Norway,Norway,NOR,aluminum,60.4,5.3,2024,co2e,1.2,low
+site-034,Quebec smelter,Nordlys Metals,manufacturing,Norway,Canada,CAN,aluminum,46.8,-71.2,2020,co2e,1.5,medium
+site-034,Quebec smelter,Nordlys Metals,manufacturing,Norway,Canada,CAN,aluminum,46.8,-71.2,2021,co2e,1.53,medium
+site-034,Quebec smelter,Nordlys Metals,manufacturing,Norway,Canada,CAN,aluminum,46.8,-71.2,2022,co2e,1.54,medium
+site-034,Quebec smelter,Nordlys Metals,manufacturing,Norway,Canada,CAN,aluminum,46.8,-71.2,2023,co2e,1.56,medium
+site-034,Quebec smelter,Nordlys Metals,manufacturing,Norway,Canada,CAN,aluminum,46.8,-71.2,2024,co2e,1.6,medium
+site-035,Gulf aluminium works,Nordlys Metals,manufacturing,Norway,Saudi Arabia,SAU,aluminum,27.0,49.6,2020,co2e,2.75,medium
+site-035,Gulf aluminium works,Nordlys Metals,manufacturing,Norway,Saudi Arabia,SAU,aluminum,27.0,49.6,2021,co2e,2.76,medium
+site-035,Gulf aluminium works,Nordlys Metals,manufacturing,Norway,Saudi Arabia,SAU,aluminum,27.0,49.6,2022,co2e,2.79,medium
+site-035,Gulf aluminium works,Nordlys Metals,manufacturing,Norway,Saudi Arabia,SAU,aluminum,27.0,49.6,2023,co2e,2.81,medium
+site-035,Gulf aluminium works,Nordlys Metals,manufacturing,Norway,Saudi Arabia,SAU,aluminum,27.0,49.6,2024,co2e,2.8,medium
+site-036,Anhui cement plant,Dragon Materials,manufacturing,China,China,CHN,cement,31.8,117.2,2020,co2e,5.02,high
+site-036,Anhui cement plant,Dragon Materials,manufacturing,China,China,CHN,cement,31.8,117.2,2021,co2e,5.27,high
+site-036,Anhui cement plant,Dragon Materials,manufacturing,China,China,CHN,cement,31.8,117.2,2022,co2e,5.53,high
+site-036,Anhui cement plant,Dragon Materials,manufacturing,China,China,CHN,cement,31.8,117.2,2023,co2e,5.86,high
+site-036,Anhui cement plant,Dragon Materials,manufacturing,China,China,CHN,cement,31.8,117.2,2024,co2e,6.2,high
