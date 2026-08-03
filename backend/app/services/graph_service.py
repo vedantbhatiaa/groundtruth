@@ -185,3 +185,21 @@ def country_timeseries(iso: str, from_year: int = 1990, to_year: int = 2024) -> 
 def country_iso_for_name(name: str) -> str | None:
     rows = run_read("MATCH (co:Country {name: $name}) RETURN co.iso AS iso LIMIT 1", name=name)
     return rows[0]["iso"] if rows else None
+
+
+def available_sectors() -> list[dict]:
+    """Every sector that exists anywhere in the graph, with its site count.
+
+    The left rail needs this because it only ever sees the CURRENT filtered
+    sites — it can't tell "no coal sites in this view" apart from "coal
+    doesn't exist in any loaded dataset". Only the former is worth telling
+    the user about.
+    """
+    return run_read(
+        """
+        MATCH (s:Site)
+        WHERE s.sector IS NOT NULL
+        RETURN s.sector AS sector, count(*) AS n
+        ORDER BY n DESC
+        """
+    )

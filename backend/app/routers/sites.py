@@ -16,6 +16,12 @@ def list_sites(
     )
 
 
+@router.get("/sectors")
+def available_sectors():
+    """Must be declared before /{site_id} so it isn't captured as an id."""
+    return graph_service.available_sectors()
+
+
 @router.get("/{site_id}")
 def get_site(site_id: str):
     site = graph_service.get_site(site_id)

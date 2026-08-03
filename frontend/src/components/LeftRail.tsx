@@ -38,13 +38,14 @@ export const DATA_SOURCES: { value: DataSource; label: string; detail: string }[
   { value: "climate_trace", label: "Climate TRACE", detail: "Modelled site emissions, 2021-2024" },
   { value: "epa", label: "EPA GHGRP", detail: "Reported US facilities, 2010-2023" },
   { value: "wri", label: "WRI Power Plants", detail: "Capacity, generation, intensity" },
-  { value: "owid", label: "Our World in Data", detail: "Country context, 1950-2024" },
 ];
 
 interface Props {
   sites: Site[];
   activeSource: DataSource;
   onChangeSource: (source: DataSource) => void;
+  /** Sectors present anywhere in the loaded data (any source or industry). */
+  loadedSectors: string[];
   activeSectors: string[];
   onToggleSector: (sector: string) => void;
   onSelectSite: (site: Site) => void;
@@ -56,6 +57,7 @@ export default function LeftRail({
   sites,
   activeSource,
   onChangeSource,
+  loadedSectors,
   activeSectors,
   onToggleSector,
   onSelectSite,
@@ -68,7 +70,11 @@ export default function LeftRail({
     return acc;
   }, {});
   const presentSectors = SECTORS.filter((s) => sectorCounts[s.value]);
-  const emptySectors = SECTORS.filter((s) => !sectorCounts[s.value]);
+  // Only mention sectors that genuinely exist somewhere in the data. A
+  // sector no dataset contains is noise, not information.
+  const absentSectors = SECTORS.filter(
+    (s) => !sectorCounts[s.value] && loadedSectors.includes(s.value)
+  );
 
   const topEmitters = [...sites].sort((a, b) => b.co2 - a.co2).slice(0, 5);
   const maxCo2 = topEmitters[0]?.co2 ?? 1;
@@ -115,9 +121,9 @@ export default function LeftRail({
             </div>
           ))}
         </div>
-        {emptySectors.length > 0 && (
+        {absentSectors.length > 0 && (
           <div className="rail-note">
-            Not in this view: {emptySectors.map((s) => s.label).join(", ")}
+            Not in this view: {absentSectors.map((s) => s.label).join(", ")}
           </div>
         )}
       </div>

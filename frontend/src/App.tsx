@@ -16,7 +16,7 @@ import CompanyDetail from "./components/CompanyDetail";
 import InfoPage from "./components/InfoPage";
 import CountryPanel from "./components/CountryPanel";
 import { useTheme } from "./hooks/useTheme";
-import { fetchSites, checkHealth, fetchStatsTimeseries } from "./api/client";
+import { fetchSites, checkHealth, fetchStatsTimeseries, fetchAvailableSectors } from "./api/client";
 import { Site, sampleSites } from "./data/sampleSites";
 import { fmtMt } from "./utils/format";
 
@@ -59,6 +59,9 @@ export default function App() {
   const [backendOnline, setBackendOnline] = useState(false);
   const [statsSpark, setStatsSpark] = useState<number[] | undefined>(undefined);
   const [activeSource, setActiveSource] = useState<DataSource>("all");
+  // Which sectors exist in the data at all — lets the rail distinguish
+  // "absent from this view" from "absent from every dataset".
+  const [loadedSectors, setLoadedSectors] = useState<string[]>([]);
 
   // Ctrl/Cmd/Shift-click adds a second site for side-by-side comparison;
   // a plain click always resets to a single selection.
@@ -125,6 +128,10 @@ export default function App() {
   const flatHandle = useRef<FlatMapHandle>(null);
 
   useEffect(() => {
+    fetchAvailableSectors().then((rows) => rows && setLoadedSectors(rows));
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     async function poll() {
       const online = await checkHealth();
@@ -168,8 +175,6 @@ export default function App() {
     visibleSites = visibleSites.filter((s) => s.source === "epa_ghgrp" || s.id.startsWith("epa-"));
   } else if (activeSource === "wri") {
     visibleSites = visibleSites.filter((s) => s.generation_gwh != null || s.capacity != null);
-  } else if (activeSource === "owid") {
-    visibleSites = [];
   }
 
   if (searchQuery.trim()) {
@@ -270,6 +275,7 @@ export default function App() {
             sites={visibleSites}
             activeSource={activeSource}
             onChangeSource={setActiveSource}
+            loadedSectors={loadedSectors}
             activeSectors={activeSectors}
             onToggleSector={toggleSector}
             onSelectSite={handleSelectSite}
@@ -328,7 +334,33 @@ export default function App() {
                 }}
               />
             )}
-            {activeSource === "epa" && !selectedSite && (
+            {activeSource === "climate_trace" && !selectedSite && !countryPanelOpen && (
+              <div className="country-panel">
+                <div className="site-name display">Climate TRACE</div>
+                <div className="site-sub">Modelled asset-level emissions</div>
+                <p style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text-dim)", marginTop: 12 }}>
+                  Emissions <b>inferred from observation</b> — satellite imagery,
+                  remote sensing and ground data run through sector models to
+                  estimate output at individual assets worldwide.
+                </p>
+                <p style={{ fontSize: 12.5, lineHeight: 1.6, color: "var(--text-faint)", marginTop: 10 }}>
+                  Global coverage, including facilities that report to no
+                  regulator — the trade-off is that figures are estimates, not
+                  declarations. Asset-level history runs 2021–2024.
+                </p>
+                <div className="mini-kpis" style={{ marginTop: 10 }}>
+                  <div><span className="mini-kpi-label">Sites in view</span><b>{visibleSites.length}</b></div>
+                  <div><span className="mini-kpi-label">Years available</span><b>2021–2024</b></div>
+                </div>
+                {parseInt(selectedYear, 10) < 2021 && (
+                  <p style={{ fontSize: 12.5, lineHeight: 1.6, color: "var(--amber)", marginTop: 10 }}>
+                    {selectedYear} is outside this source's range — switch to 2021
+                    or later to see sites.
+                  </p>
+                )}
+              </div>
+            )}
+            {activeSource === "epa" && !selectedSite && !countryPanelOpen && (
               <div className="country-panel">
                 <div className="site-name display">EPA GHGRP</div>
                 <div className="site-sub">US Greenhouse Gas Reporting Program</div>
@@ -355,7 +387,7 @@ export default function App() {
                 )}
               </div>
             )}
-            {activeSource === "wri" && !selectedSite && (
+            {activeSource === "wri" && !selectedSite && !countryPanelOpen && (
               <div className="country-panel">
                 <div className="site-name display">WRI Power Plants</div>
                 <div className="site-sub">Global Power Plant Database</div>
@@ -382,17 +414,6 @@ export default function App() {
                     <b>{visibleSites.length}</b>
                   </div>
                 </div>
-              </div>
-            )}
-            {activeSource === "owid" && country === "All countries" && (
-              <div className="country-panel">
-                <div className="site-name display">Our World in Data</div>
-                <div className="site-sub">Country context · 1950–2024</div>
-                <p style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text-dim)", marginTop: 12 }}>
-                  This source is country-scale rather than site-scale. Pick a country
-                  in the left rail to see decades of emissions, per-capita intensity,
-                  and fuel split.
-                </p>
               </div>
             )}
 

@@ -192,3 +192,16 @@ export async function fetchCountryTimeseries(
     return null;
   }
 }
+
+/** Sectors that exist anywhere in the loaded data, regardless of filters. */
+export async function fetchAvailableSectors(): Promise<string[] | null> {
+  try {
+    const res = await fetch(`${BASE}/sites/sectors`, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error("sectors fetch failed");
+    const rows: { sector: string; n: number }[] = await res.json();
+    return rows.map((r) => r.sector);
+  } catch (err) {
+    console.warn("[Groundtruth] sector list unavailable:", err);
+    return null;
+  }
+}
