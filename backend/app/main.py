@@ -19,6 +19,18 @@ app.include_router(ingest.router)
 app.include_router(analytics.router)
 
 
+@app.on_event("startup")
+def startup():
+    """Create query indexes if they're missing. Cheap when they already exist."""
+    from app.services.graph_service import ensure_indexes
+
+    try:
+        ensure_indexes()
+        print("[startup] Neo4j indexes verified")
+    except Exception as exc:
+        print(f"[startup] index setup skipped: {exc}")
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok"}

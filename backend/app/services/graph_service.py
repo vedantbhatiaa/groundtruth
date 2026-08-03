@@ -27,7 +27,11 @@ def list_sites(
     MATCH (c:Company)-[:OWNS]->(s:Site)-[:LOCATED_IN]->(co:Country)
     WHERE ($industry IS NULL OR coalesce(s.industry, c.industry) IN $industry)
       AND ($country IS NULL OR co.name = $country)
-    OPTIONAL MATCH (s)-[:EMITS]->(e:EmissionRecord {year: $year})
+    // Not OPTIONAL: a site with no record for this year is dropped anyway,
+    // and Neo4j sorts NULL FIRST under ORDER BY ... DESC — so with several
+    // thousand sites lacking the selected year, the LIMIT filled up entirely
+    // with null-emission rows and the endpoint returned nothing at all.
+    MATCH (s)-[:EMITS]->(e:EmissionRecord {year: $year})
     OPTIONAL MATCH (s)-[:EMITS]->(b:EmissionRecord {year: $base_year})
     RETURN s.id AS id, s.name AS name, c.name AS company, co.name AS country,
            s.sector AS sector, s.lat AS lat, s.lon AS lng,
@@ -40,21 +44,29 @@ def list_sites(
     """
     rows = run_read(query, industry=industry, country=country, year=year, base_year=base_year)
 
-    # Climate TRACE coverage starts in 2021, so a 5YR window asks for a 2019
-    # baseline that doesn't exist and every site reported "no baseline data".
-    # Fall back to each site's EARLIEST record and label the trend with the
-    # year it's actually measured from, rather than showing nothing.
-    earliest = {
-        r["site_id"]: r
-        for r in run_read(
-            """
-            MATCH (s:Site)-[:EMITS]->(e:EmissionRecord)
-            WITH s.id AS site_id, min(e.year) AS first_year
-            MATCH (s2:Site {id: site_id})-[:EMITS]->(e2:EmissionRecord {year: first_year})
-            RETURN site_id, first_year, e2.tons AS first_tons
-            """
-        )
-    }
+    # Baseline fallback: Climate TRACE starts in 2021, so a 5YR window asks
+    # for a 2019 baseline that doesn't exist. Fall back to each site's
+    # EARLIEST record and label the trend with the year it's measured from.
+    #
+    # Scoped to the sites actually being returned. Previously this scanned
+    # every site and every emission record in the graph on EVERY request —
+    # fine at 200 sites, a multi-second full scan at 36,000+ records.
+    needs_baseline = [r["id"] for r in rows if not r.get("baseline")]
+    earliest: dict[str, dict] = {}
+    if needs_baseline:
+        earliest = {
+            r["site_id"]: r
+            for r in run_read(
+                """
+                MATCH (s:Site)-[:EMITS]->(e:EmissionRecord)
+                WHERE s.id IN $ids
+                WITH s.id AS site_id, min(e.year) AS first_year
+                MATCH (s2:Site {id: site_id})-[:EMITS]->(e2:EmissionRecord {year: first_year})
+                RETURN site_id, first_year, e2.tons AS first_tons
+                """,
+                ids=needs_baseline,
+            )
+        }
 
     for row in rows:
         co2 = row.get("co2")
@@ -203,3 +215,29 @@ def available_sectors() -> list[dict]:
         ORDER BY n DESC
         """
     )
+
+
+# Indexes that the hot queries depend on. Without an index on
+# EmissionRecord.year, every {year: $year} match scans all ~40,000 records —
+# which is what made the site list take seconds once EPA data was loaded.
+INDEXES = [
+    "CREATE INDEX emission_year IF NOT EXISTS FOR (e:EmissionRecord) ON (e.year)",
+    "CREATE INDEX emission_site IF NOT EXISTS FOR (e:EmissionRecord) ON (e.site_id)",
+    "CREATE INDEX emission_site_year IF NOT EXISTS FOR (e:EmissionRecord) ON (e.site_id, e.year)",
+    "CREATE INDEX site_industry IF NOT EXISTS FOR (s:Site) ON (s.industry)",
+    "CREATE INDEX site_sector IF NOT EXISTS FOR (s:Site) ON (s.sector)",
+    "CREATE INDEX company_name IF NOT EXISTS FOR (c:Company) ON (c.name)",
+    "CREATE INDEX country_name IF NOT EXISTS FOR (co:Country) ON (co.name)",
+    "CREATE INDEX countrystat_iso_year IF NOT EXISTS FOR (cs:CountryStat) ON (cs.iso, cs.year)",
+]
+
+
+def ensure_indexes() -> None:
+    """Idempotent — safe to call on every startup."""
+    from app.db.neo4j_client import run_write
+
+    for statement in INDEXES:
+        try:
+            run_write(statement)
+        except Exception as exc:
+            print(f"[schema] index skipped: {exc}")
