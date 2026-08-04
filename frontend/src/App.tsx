@@ -265,7 +265,7 @@ export default function App() {
           }}
         />
       ) : view !== "map" ? (
-        <InfoPage page={view} onBack={() => setView("map")} />
+        <InfoPage page={view} sites={visibleSites} loadedSectors={loadedSectors} onBack={() => setView("map")} />
       ) : (
         <div className="shell">
           <LeftRail
