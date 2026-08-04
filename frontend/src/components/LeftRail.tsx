@@ -47,6 +47,10 @@ interface Props {
   onSelectSite: (site: Site) => void;
   country: string;
   onChangeCountry: (country: string) => void;
+  /** Mobile-only: whether the rail is currently slid into view. Ignored
+   * entirely on desktop widths, where the rail is always visible. */
+  open?: boolean;
+  onClose?: () => void;
 }
 
 export default function LeftRail({
@@ -59,6 +63,8 @@ export default function LeftRail({
   onSelectSite,
   country,
   onChangeCountry,
+  open = false,
+  onClose,
 }: Props) {
   const sectorCounts = sites.reduce<Record<string, number>>((acc, s) => {
     const key = s.sector ?? "other";
@@ -76,7 +82,15 @@ export default function LeftRail({
   const maxCo2 = topEmitters[0]?.co2 ?? 1;
 
   return (
-    <div className="rail">
+    <>
+      {/* Mobile-only backdrop; CSS keeps this invisible/inert on desktop. */}
+      <div className={`rail-scrim ${open ? "open" : ""}`} onClick={onClose} />
+      <div className={`rail ${open ? "open" : ""}`}>
+      <button className="rail-close" onClick={onClose} aria-label="Close filters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+      </button>
       <div className="rail-section">
         <div className="rail-label">Country</div>
         <select
@@ -159,6 +173,7 @@ export default function LeftRail({
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -30,6 +30,7 @@ const INDUSTRY_LABELS: Record<string, string> = {
 export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
   const [navOpen, setNavOpen] = useState(false);
+  const [railOpen, setRailOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [view, setView] = useState("map");
 
@@ -187,26 +188,9 @@ export default function App() {
   }
 
   function downloadCsv() {
-    // Proper RFC-4180 escaping: EPA parent-company names routinely contain
-    // commas and quotes, which the previous naive quoting corrupted.
-    const esc = (v: unknown) => {
-      if (v === null || v === undefined) return "";
-      const s = String(v);
-      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-    };
-    const cols = [
-      "id", "name", "company", "country", "sector", "industry", "lat", "lng",
-      "co2_mt", "trend", "baseline_year", "intensity", "source",
-      "capacity_mw", "generation_gwh", "primary_fuel", "commissioning_year",
-    ];
-    const header = cols.join(",");
-    const rows = visibleSites.map((s) =>
-      [
-        s.id, s.name, s.company, s.country, s.sector, (s as any).industry ?? "",
-        s.lat, s.lng, s.co2, s.trend, s.baseline_year ?? "", s.intensity,
-        s.source ?? "", s.capacity ?? "", s.generation_gwh ?? "",
-        s.primary_fuel ?? "", s.commissioning_year ?? "",
-      ].map(esc).join(",")
+    const header = "id,name,company,country,sector,lat,lng,co2_mt,trend,intensity";
+    const rows = visibleSites.map(
+      (s) => `${s.id},"${s.name}","${s.company}","${s.country}",${s.sector},${s.lat},${s.lng},${s.co2},${s.trend},${s.intensity}`
     );
     const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
     const link = document.createElement("a");
@@ -245,6 +229,7 @@ export default function App() {
       <NavDrawer open={navOpen} onClose={() => setNavOpen(false)} onNavigate={handleNavigate} />
       <Header
         onOpenNav={() => setNavOpen(true)}
+        onOpenRail={() => setRailOpen(true)}
         onHome={() => handleNavigate("map3d")}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -280,14 +265,7 @@ export default function App() {
           }}
         />
       ) : view !== "map" ? (
-        // Info pages receive live figures so their claims can't drift from
-        // whatever is actually loaded.
-        <InfoPage
-          page={view}
-          sites={visibleSites}
-          loadedSectors={loadedSectors}
-          onBack={() => setView("map")}
-        />
+        <InfoPage page={view} onBack={() => setView("map")} />
       ) : (
         <div className="shell">
           <LeftRail
@@ -297,9 +275,14 @@ export default function App() {
             loadedSectors={loadedSectors}
             activeSectors={activeSectors}
             onToggleSector={toggleSector}
-            onSelectSite={handleSelectSite}
+            onSelectSite={(s) => {
+              handleSelectSite(s);
+              setRailOpen(false);
+            }}
             country={country}
             onChangeCountry={setCountry}
+            open={railOpen}
+            onClose={() => setRailOpen(false)}
           />
 
           <div className="stage">

@@ -39,16 +39,25 @@ export default function ControlRow({
         <div className="switch">
           <i />
         </div>
-        Sites
+        <span className="pill-text">Sites</span>
       </div>
 
       <div className={`pill-btn ${legendOn ? "on" : ""}`} onClick={onToggleLegend}>
-        Legend
+        <svg className="pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2l9 4.9-9 4.9-9-4.9L12 2z" />
+          <path d="M3 12.1l9 4.9 9-4.9M3 17l9 4.9L21 17" />
+        </svg>
+        <span className="pill-text">Legend</span>
       </div>
 
       <div className="dd" style={{ position: "relative" }}>
         <div className="pill-btn" onClick={() => setHowtoOpen((o) => !o)}>
-          How to use
+          <svg className="pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.5" />
+            <path d="M12 17h.01" />
+          </svg>
+          <span className="pill-text">How to use</span>
         </div>
         <div className={`howto-pop ${howtoOpen ? "open" : ""}`}>
           Rotate the globe by dragging, scroll to zoom, and click any point to inspect a site.

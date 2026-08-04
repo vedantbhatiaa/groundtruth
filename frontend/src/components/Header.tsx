@@ -2,6 +2,7 @@ import { Theme } from "../hooks/useTheme";
 
 interface Props {
   onOpenNav: () => void;
+  onOpenRail: () => void;
   onHome: () => void;
   theme: Theme;
   onToggleTheme: () => void;
@@ -12,6 +13,7 @@ interface Props {
 
 export default function Header({
   onOpenNav,
+  onOpenRail,
   onHome,
   theme,
   onToggleTheme,
@@ -24,6 +26,15 @@ export default function Header({
       <button className="hamburger" onClick={onOpenNav} aria-label="Open menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+      </button>
+
+      {/* Mobile-only: opens the filter/sector rail as a slide-in drawer.
+          Lives in the header (not floating over the map) so it's never
+          covered by the site/country cards once something is selected. */}
+      <button className="rail-fab" onClick={onOpenRail} aria-label="Open filters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 6h16M7 12h10M10 18h4" />
         </svg>
       </button>
 
