@@ -858,12 +858,26 @@ select option{background:var(--bg-1);color:var(--text);}
 .rail-scrim.open{display:block;}
 .rail-close{display:none;}
 
+/* iOS Safari zooms the whole page in when a focused input's font is under
+   16px — this was pushing the header off-screen and hiding the hamburger
+   and search bar after tapping anything. Locking every field to 16px
+   stops it at the source (the viewport meta's maximum-scale is the other
+   half of this fix, in index.html). */
+@media (max-width:900px), (max-height:520px){
+  input, select, textarea{font-size:16px !important;}
+}
+
 @media (max-width:900px), (max-height:520px){
   /* --- Header: strip it to essentials so it fits one short row --- */
-  header{padding:8px 10px;gap:8px;}
+  header{padding:8px 10px;gap:6px;}
   .brand .tag{display:none;}
+  /* The wordmark eats most of the row width, leaving the search box a
+     sliver — just the mark (the "G" icon) is enough branding on a phone,
+     and search actually needs the room. */
+  .brand .word{display:none;}
   .status{display:none;}
-  .search-wrap{max-width:none;}
+  .search-wrap{max-width:none;flex:1;min-width:0;}
+  .search-wrap input{padding:8px 10px 8px 30px;}
 
   /* --- Filter bar: scroll horizontally instead of wrapping tall --- */
   .filterbar{padding:8px 10px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
@@ -897,36 +911,58 @@ select option{background:var(--bg-1);color:var(--text);}
   .summary-card .meta{font-size:11px;}
 
   /* Site/country cards: small corner boxes, same idea as desktop, not
-     full-width blocks — the globe or 2D map stays visible around them. */
+     full-width blocks — the globe or 2D map stays visible around them.
+     Sized and typeset noticeably smaller than desktop, not just narrower —
+     a phone corner box needs compact text, not a shrunk desktop card. */
   .site-overlay{
-    left:auto;right:10px;top:10px;width:min(220px,47vw);
-    max-height:56vh;overflow-y:auto;padding:12px 13px;
+    left:auto;right:8px;top:8px;width:min(170px,44vw);
+    max-height:50vh;overflow-y:auto;padding:9px 10px;
   }
-  .site-overlay.left{left:10px;right:auto;}
-  .site-overlay.stacked{top:10px;right:10px;}
+  .site-overlay.left{left:8px;right:auto;}
+  .site-overlay.stacked{top:8px;right:8px;}
+  .site-overlay .site-name{font-size:12.5px;line-height:1.25;padding-right:20px;}
+  .site-overlay .site-sub{font-size:9.5px;margin-top:2px;}
+  .site-overlay .site-big{font-size:19px;margin-top:6px;}
+  .site-overlay .site-big small{font-size:9.5px;}
+  .site-overlay .site-delta{font-size:9.5px;}
+  .site-overlay .mini-kpis > div, .site-overlay .mini-kpis b{font-size:9.5px;}
+  .site-overlay .mini-kpis{margin-top:7px;padding-top:6px;gap:3px;}
+  .site-overlay .news-item{font-size:9.5px;padding:5px 0;}
+  .site-overlay-close{top:6px;right:6px;font-size:12px;}
 
   .country-panel{
-    left:auto;right:10px;top:10px;width:min(220px,47vw);
-    max-height:56vh;overflow-y:auto;padding:12px 13px;
+    left:auto;right:8px;top:8px;width:min(170px,44vw);
+    max-height:50vh;overflow-y:auto;padding:9px 10px;
   }
+  .country-panel .site-name{font-size:12.5px;}
+  .country-panel .site-sub{font-size:9.5px;}
+  .country-panel .site-big{font-size:19px;margin-top:6px;}
+  .country-panel .site-big small{font-size:9.5px;}
+  .country-panel select, .country-panel .segmented button{font-size:9.5px;padding:4px 6px;}
+  .country-panel .panel-controls{gap:4px;flex-wrap:wrap;}
+  .country-panel .rail-label{font-size:9px;}
+  .country-panel .fuel-legend{font-size:9px;gap:5px;}
+  .country-panel .analysis-sub{font-size:9.5px;}
+  .country-panel svg{max-width:100%;height:auto;}
 
-  .compare-badge{font-size:10.5px;padding:5px 12px;}
+  .compare-badge{font-size:9.5px;padding:4px 10px;}
 }
 
 /* Portrait phones: narrow width means side-by-side corner boxes would be
    too cramped to read — show one card at a time. Site takes the top-left
    corner (country steps into the bottom-right, where the industry summary
-   normally sits, since the two are never meaningful at once); in compare
-   mode only the primary site shows, matching how little width there is. */
+   normally sits, since the two are never meaningful at once); compare
+   mode is disabled entirely on a phone — there just isn't room for two
+   readable cards, in either orientation. */
 @media (max-width:900px) and (orientation:portrait){
-  .site-overlay{left:10px;right:auto;}
-  .site-overlay.left{left:10px;right:auto;}
+  .site-overlay{left:8px;right:auto;}
+  .site-overlay.left{left:8px;right:auto;}
 
   /* A site's own country panel swaps into the summary card's corner
      instead of stacking on top of the site card — so the summary card
      steps aside rather than fighting it for the same corner. */
   .site-overlay.open ~ .country-panel{
-    top:auto;bottom:56px;right:10px;left:auto;max-height:32vh;
+    top:auto;bottom:52px;right:8px;left:auto;max-height:28vh;
   }
   .summary-card:has(~ .site-overlay.open){display:none;}
   /* Country panel with no site selected stays in its normal top-right spot. */
@@ -936,20 +972,17 @@ select option{background:var(--bg-1);color:var(--text);}
   .site-overlay.open.left ~ .compare-badge{display:none;}
 }
 
-/* Landscape phones: enough width for the desktop-style two-corner layout —
-   site top-left, country (or the comparison site) top-right, both visible
-   alongside the map. */
+/* Landscape phones: still just one card at a time for now — compare mode
+   needs more room than even a sideways phone comfortably gives. Site and
+   its country panel each get a small corner instead. */
 @media (max-height:520px) and (orientation:landscape){
-  .site-overlay{left:auto;right:10px;top:8px;max-height:70vh;}
+  .site-overlay{left:auto;right:8px;top:6px;max-height:82vh;}
   .site-overlay.left{left:8px;right:auto;}
-  .country-panel{left:auto;right:10px;top:8px;max-height:70vh;}
-  .site-overlay.open ~ .country-panel{top:8px;right:10px;max-height:70vh;}
-  .site-overlay.open.left ~ .site-overlay.open:not(.left){
-    display:block;left:auto;right:10px;top:8px;max-height:70vh;
-  }
-  .site-overlay.open.left ~ .compare-badge{
-    display:block;top:auto;bottom:60px;left:50%;right:auto;transform:translateX(-50%);
-  }
+  .country-panel{left:auto;right:8px;top:6px;max-height:82vh;}
+  .site-overlay.open ~ .country-panel{top:6px;right:8px;max-height:82vh;}
+
+  .site-overlay.open.left ~ .site-overlay.open:not(.left){display:none;}
+  .site-overlay.open.left ~ .compare-badge{display:none;}
 }
 
 @media (max-width:900px), (max-height:520px){
@@ -986,6 +1019,16 @@ select option{background:var(--bg-1);color:var(--text);}
     position:fixed;top:0;right:0;bottom:0;width:0;z-index:70;
   }
   .drawer.open{width:100%;}
+  /* The desktop close control is a tiny "▾" meant for a collapse arrow
+     next to a wide header — on a full-screen mobile drawer it was too
+     small and easy to miss, which is why closing felt unreliable. Give it
+     a much bigger tap target and swap the glyph for a clearer "close". */
+  .drawer-header{padding:14px 16px;}
+  .drawer-collapse{
+    font-size:0;width:40px;height:40px;padding:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .drawer-collapse::before{content:"✕";font-size:20px;}
 }
 
 /* Extra-short landscape (e.g. a phone sideways): compact further */
