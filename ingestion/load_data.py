@@ -1,7 +1,7 @@
 import csv, urllib.request
 from neo4j import GraphDatabase
 
-URI = "bolt://shuttle.proxy.rlwy.net:31207"
+URI = "bolt+ssc://shuttle.proxy.rlwy.net:31207"
 USER = "neo4j"
 PASSWORD = "Hwm5GUAO76kPLZmsSr6aIiTKyPDJSWP_"
 
@@ -11,6 +11,10 @@ urllib.request.urlretrieve(CSV_URL, "sites_sample.csv")
 driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
 driver.verify_connectivity()
 print("Connected OK")
+
+with driver.session() as session:
+    result = session.run("RETURN 1 AS test")
+    print("Test query result:", result.single()["test"])
 
 UPSERT = """
 MERGE (c:Company {id: $company_id})
@@ -44,6 +48,8 @@ with driver.session() as session, open("sites_sample.csv", newline="") as f:
             year=int(row["year"]), gas=row["gas"], tons=float(row["tons_millions"]),
         )
         count += 1
+        if count % 20 == 0:
+            print(f"...{count} rows so far")
 
 print(f"Loaded {count} rows total")
 driver.close()
