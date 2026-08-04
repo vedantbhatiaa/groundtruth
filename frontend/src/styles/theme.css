@@ -797,13 +797,23 @@ select option{background:var(--bg-1);color:var(--text);}
 
 .an-inline-legend{flex-shrink:0;display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;}
 
-/* Below this width a single screen stops being realistic — allow scroll */
-@media (max-width:1100px), (max-height:620px){
+/* Below this width a single screen stops being realistic — allow scroll.
+   Restricted to portrait: a landscape phone is short but still has
+   desktop-like width, so it keeps the real multi-column layout instead
+   of being squeezed into one column just because it isn't tall. */
+@media (max-width:1100px) and (orientation:portrait), (max-height:420px){
   .analysis-view{overflow-y:auto;}
   .an-shell{grid-template-columns:1fr;}
   .an-left,.an-right{grid-template-rows:none;grid-template-columns:1fr;}
   .an-card{min-height:180px;}
   .an-sites-scroll{max-height:300px;}
+}
+
+/* Landscape phones: keep the desktop grid, just let it scroll instead of
+   forcing everything to fit one screen at a squeeze. */
+@media (max-height:520px) and (orientation:landscape){
+  .analysis-view{overflow-y:auto;}
+  .an-card{min-height:140px;}
 }
 
 /* Long Climate TRACE names (e.g. "Venezuela_Maturin_Conventional onshore")
@@ -886,37 +896,63 @@ select option{background:var(--bg-1);color:var(--text);}
   .summary-card .big{font-size:24px;}
   .summary-card .meta{font-size:11px;}
 
+  /* Site/country cards: small corner boxes, same idea as desktop, not
+     full-width blocks — the globe or 2D map stays visible around them. */
   .site-overlay{
-    left:10px;right:10px;top:10px;width:auto;max-height:40vh;overflow-y:auto;padding:13px 14px;
+    left:auto;right:10px;top:10px;width:min(220px,47vw);
+    max-height:56vh;overflow-y:auto;padding:12px 13px;
   }
-  .site-overlay.left{left:10px;right:10px;}
+  .site-overlay.left{left:10px;right:auto;}
   .site-overlay.stacked{top:10px;right:10px;}
 
-  .country-panel{left:10px;right:10px;width:auto;max-height:40vh;overflow-y:auto;}
-
-  /* When a site is selected, it also auto-opens that site's country panel
-     (desktop shows them side by side). On a phone there's no "side" to put
-     it — so stack it below the reserved site-overlay space instead of
-     letting them silently overlap (the country panel would otherwise be
-     rendered but fully hidden behind the site card). Budgeted in real
-     pixels against a ~640-850px phone: site-overlay ends ~10+40vh, this
-     starts right after with just enough left for the summary card. */
-  .site-overlay.open ~ .country-panel{
-    top:42vh;max-height:22vh;
-  }
-
-  /* Compare mode (two sites): same collision, same fix. The primary card
-     carries .left in compare mode; the comparison card is the next
-     .site-overlay sibling without it — stack it below the primary. */
-  .site-overlay.open.left ~ .site-overlay.open:not(.left){
-    top:42vh;max-height:22vh;
-  }
-  .site-overlay.open.left ~ .compare-badge{
-    top:66vh;bottom:auto;left:10px;right:10px;transform:none;text-align:center;
+  .country-panel{
+    left:auto;right:10px;top:10px;width:min(220px,47vw);
+    max-height:56vh;overflow-y:auto;padding:12px 13px;
   }
 
   .compare-badge{font-size:10.5px;padding:5px 12px;}
+}
 
+/* Portrait phones: narrow width means side-by-side corner boxes would be
+   too cramped to read — show one card at a time. Site takes the top-left
+   corner (country steps into the bottom-right, where the industry summary
+   normally sits, since the two are never meaningful at once); in compare
+   mode only the primary site shows, matching how little width there is. */
+@media (max-width:900px) and (orientation:portrait){
+  .site-overlay{left:10px;right:auto;}
+  .site-overlay.left{left:10px;right:auto;}
+
+  /* A site's own country panel swaps into the summary card's corner
+     instead of stacking on top of the site card — so the summary card
+     steps aside rather than fighting it for the same corner. */
+  .site-overlay.open ~ .country-panel{
+    top:auto;bottom:56px;right:10px;left:auto;max-height:32vh;
+  }
+  .summary-card:has(~ .site-overlay.open){display:none;}
+  /* Country panel with no site selected stays in its normal top-right spot. */
+
+  /* Compare mode: only the primary card fits comfortably in portrait. */
+  .site-overlay.open.left ~ .site-overlay.open:not(.left){display:none;}
+  .site-overlay.open.left ~ .compare-badge{display:none;}
+}
+
+/* Landscape phones: enough width for the desktop-style two-corner layout —
+   site top-left, country (or the comparison site) top-right, both visible
+   alongside the map. */
+@media (max-height:520px) and (orientation:landscape){
+  .site-overlay{left:auto;right:10px;top:8px;max-height:70vh;}
+  .site-overlay.left{left:8px;right:auto;}
+  .country-panel{left:auto;right:10px;top:8px;max-height:70vh;}
+  .site-overlay.open ~ .country-panel{top:8px;right:10px;max-height:70vh;}
+  .site-overlay.open.left ~ .site-overlay.open:not(.left){
+    display:block;left:auto;right:10px;top:8px;max-height:70vh;
+  }
+  .site-overlay.open.left ~ .compare-badge{
+    display:block;top:auto;bottom:60px;left:50%;right:auto;transform:translateX(-50%);
+  }
+}
+
+@media (max-width:900px), (max-height:520px){
   /* --- Bottom-right controls: icon-only, stacked with a real gap so the
      chat button and the control row never overlap --- */
   .control-row{bottom:8px;right:8px;gap:4px;}
@@ -959,16 +995,9 @@ select option{background:var(--bg-1);color:var(--text);}
   .summary-card{max-height:100px;padding:10px 12px;}
   .summary-card .big{font-size:22px;margin-top:3px;}
   .summary-card .meta{display:none;}
-  .site-overlay{max-height:150px;padding:11px 12px;top:8px;}
-  .site-big{font-size:26px;margin-top:8px;}
-
-  /* Percentage-based stacking (used above 420px tall) doesn't leave
-     enough room once site-overlay is capped at a fixed 150px here —
-     recompute in fixed pixels for this specific short-landscape case. */
-  .country-panel{top:8px;max-height:150px;}
-  .site-overlay.open ~ .country-panel{top:166px;max-height:96px;}
-  .site-overlay.open.left ~ .site-overlay.open:not(.left){top:166px;max-height:96px;}
-  .site-overlay.open.left ~ .compare-badge{top:270px;}
+  .site-overlay{max-height:80vh;padding:10px 12px;top:6px;}
+  .country-panel{max-height:80vh;padding:10px 12px;top:6px;}
+  .site-big{font-size:22px;margin-top:6px;}
 }
 .rail-clear{
   background:none;border:none;color:var(--teal);font-size:10px;cursor:pointer;
