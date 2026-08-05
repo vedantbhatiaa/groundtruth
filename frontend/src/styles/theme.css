@@ -86,6 +86,11 @@
     overflow:hidden;
     display:flex;
     flex-direction:column;
+    /* Belt-and-suspenders for the iOS zoom issue: the viewport meta tag's
+       user-scalable=no isn't consistently honored for double-tap across
+       iOS/Safari versions. touch-action:manipulation is the standard,
+       reliable way to kill double-tap-to-zoom regardless. */
+    touch-action: manipulation;
   }
   .mono{font-family:'JetBrains Mono', monospace;}
   .display{font-family:'Space Grotesk', sans-serif;}
@@ -176,15 +181,18 @@
   .filterbar-spacer{flex:1;}
   .filter-label{font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.07em;margin-right:2px;flex-shrink:0;}
 
-  /* ===== Left nav drawer (hamburger) ===== */
+  /* ===== Left nav drawer (hamburger) =====
+     Same left-based positioning as the filters rail, for the same reason:
+     transform: translateX(-100%) left a hairline seam visible on some
+     devices when closed. */
   .nav-scrim{position:fixed;inset:0;background:var(--scrim);z-index:60;display:none;}
   .nav-scrim.open{display:block;}
   .nav-drawer{
-    position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--header-bg);z-index:61;
-    transform:translateX(-100%);transition:transform .25s ease;padding:20px 0;overflow-y:auto;
+    position:fixed;top:0;left:-300px;bottom:0;width:280px;background:var(--header-bg);z-index:61;
+    transition:left .25s ease;padding:20px 0;overflow-y:auto;
     border-right:1px solid var(--border);
   }
-  .nav-drawer.open{transform:translateX(0);}
+  .nav-drawer.open{left:0;}
   .nav-drawer .nav-brand{display:flex;align-items:center;gap:9px;padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:8px;}
   .nav-section{padding:12px 20px 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-faint);border-top:1px solid var(--border);margin-top:8px;}
   .nav-section:first-of-type{border-top:none;margin-top:0;}
@@ -884,15 +892,22 @@ select option{background:var(--bg-1);color:var(--text);}
   .filterbar::-webkit-scrollbar{display:none;}
   .filterbar-spacer{display:none;}
 
-  /* --- Rail becomes a slide-in drawer, same pattern as the nav drawer --- */
+  /* --- Rail becomes a slide-in drawer, same pattern as the nav drawer ---
+     Positioned off-screen with a fixed negative `left` rather than a
+     transform: translateX(-100%) — the transform approach left a hairline
+     vertical seam visible on some devices (a subpixel compositing
+     artifact), and it also inherited the desktop sidebar's border-right,
+     which doesn't belong on a floating drawer. `left:-320px` guarantees
+     the whole drawer (max 300px wide) is genuinely off-screen, not just
+     visually approximated. */
   .rail-fab{display:flex;}
   .rail{
-    position:fixed;top:0;left:0;bottom:0;width:82%;max-width:300px;z-index:55;
-    transform:translateX(-100%);transition:transform .25s ease;
+    position:fixed;top:0;left:-320px;bottom:0;width:82%;max-width:300px;z-index:55;
+    border-right:none;transition:left .25s ease;
     background:var(--header-bg);box-shadow:0 0 30px rgba(0,0,0,0.4);
     padding-top:52px;
   }
-  .rail.open{transform:translateX(0);}
+  .rail.open{left:0;}
   .rail-close{
     display:flex;position:absolute;top:10px;right:10px;width:30px;height:30px;
     align-items:center;justify-content:center;background:none;border:none;
@@ -913,10 +928,15 @@ select option{background:var(--bg-1);color:var(--text);}
   /* Site/country cards: small corner boxes, same idea as desktop, not
      full-width blocks — the globe or 2D map stays visible around them.
      Sized and typeset noticeably smaller than desktop, not just narrower —
-     a phone corner box needs compact text, not a shrunk desktop card. */
+     a phone corner box needs compact text, not a shrunk desktop card.
+     overflow-x is locked off entirely: a couple of inline controls (the
+     metric dropdown, the year-range buttons) don't shrink below their own
+     content width, and were forcing a horizontal scrollbar inside the box
+     even though the box itself never needed to be that wide — stacking
+     them below fixes the actual cause instead of just hiding the symptom. */
   .site-overlay{
     left:auto;right:8px;top:8px;width:min(170px,44vw);
-    max-height:50vh;overflow-y:auto;padding:9px 10px;
+    max-height:56vh;overflow-y:auto;overflow-x:hidden;padding:9px 10px;
   }
   .site-overlay.left{left:8px;right:auto;}
   .site-overlay.stacked{top:8px;right:8px;}
@@ -932,14 +952,18 @@ select option{background:var(--bg-1);color:var(--text);}
 
   .country-panel{
     left:auto;right:8px;top:8px;width:min(170px,44vw);
-    max-height:50vh;overflow-y:auto;padding:9px 10px;
+    max-height:56vh;overflow-y:auto;overflow-x:hidden;padding:9px 10px;
   }
   .country-panel .site-name{font-size:12.5px;}
   .country-panel .site-sub{font-size:9.5px;}
   .country-panel .site-big{font-size:19px;margin-top:6px;}
   .country-panel .site-big small{font-size:9.5px;}
-  .country-panel select, .country-panel .segmented button{font-size:9.5px;padding:4px 6px;}
-  .country-panel .panel-controls{gap:4px;flex-wrap:wrap;}
+  /* Stacked instead of side-by-side — the dropdown and the 30Y/50Y/Max
+     group each need more width than a 170px box can give them at once. */
+  .country-panel .panel-controls{flex-direction:column;align-items:stretch;gap:5px;}
+  .country-panel select{width:100%;font-size:9.5px;padding:5px 6px;}
+  .country-panel .segmented{width:100%;}
+  .country-panel .segmented button{font-size:9px;padding:4px 6px;flex:1;}
   .country-panel .rail-label{font-size:9px;}
   .country-panel .fuel-legend{font-size:9px;gap:5px;}
   .country-panel .analysis-sub{font-size:9.5px;}
@@ -960,9 +984,12 @@ select option{background:var(--bg-1);color:var(--text);}
 
   /* A site's own country panel swaps into the summary card's corner
      instead of stacking on top of the site card — so the summary card
-     steps aside rather than fighting it for the same corner. */
+     steps aside rather than fighting it for the same corner. Given up to
+     ~45vh here (vs. the general 56vh cap), the panel's actual content
+     (name, big number, fuel split — the chart is the only thing that can
+     make this tall) fits without needing to scroll for it. */
   .site-overlay.open ~ .country-panel{
-    top:auto;bottom:52px;right:8px;left:auto;max-height:28vh;
+    top:auto;bottom:52px;right:8px;left:auto;max-height:45vh;
   }
   .summary-card:has(~ .site-overlay.open){display:none;}
   /* Country panel with no site selected stays in its normal top-right spot. */
@@ -976,10 +1003,15 @@ select option{background:var(--bg-1);color:var(--text);}
    needs more room than even a sideways phone comfortably gives. Site and
    its country panel each get a small corner instead. */
 @media (max-height:520px) and (orientation:landscape){
-  .site-overlay{left:auto;right:8px;top:6px;max-height:82vh;}
+  .site-overlay{left:auto;right:8px;top:6px;max-height:88vh;overflow-x:hidden;}
   .site-overlay.left{left:8px;right:auto;}
-  .country-panel{left:auto;right:8px;top:6px;max-height:82vh;}
-  .site-overlay.open ~ .country-panel{top:6px;right:8px;max-height:82vh;}
+  .country-panel{left:auto;right:8px;top:6px;max-height:88vh;overflow-x:hidden;}
+  .site-overlay.open ~ .country-panel{top:6px;right:8px;max-height:88vh;}
+
+  /* This was missing here — the industry summary box was only being
+     hidden in portrait, so it kept showing (and colliding) in landscape
+     every time a site was selected. */
+  .summary-card:has(~ .site-overlay.open){display:none;}
 
   .site-overlay.open.left ~ .site-overlay.open:not(.left){display:none;}
   .site-overlay.open.left ~ .compare-badge{display:none;}
